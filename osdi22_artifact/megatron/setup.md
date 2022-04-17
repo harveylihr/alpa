@@ -8,16 +8,15 @@ Verify the Megatron-LM repository on EFS we have pre-cloned:
 cd ~/efs/Megatron-LM & git log
 ```
 You should be able to see the Megatron-LM as a fork from the official [NVIDIA/Megatron-LM](https://github.com/NVIDIA/Megatron-LM) at 
-[commit b31e1296354e979722627a6c4dedafe19b51fa97])(https://github.com/NVIDIA/Megatron-LM/tree/b31e1296354e979722627a6c4dedafe19b51fa97) dated at ***Oct 7, 2021***.
+[commit b31e1296354e979722627a6c4dedafe19b51fa97](https://github.com/NVIDIA/Megatron-LM/tree/b31e1296354e979722627a6c4dedafe19b51fa97) dated at ***Oct 7, 2021***.
 
 The only code difference between this version we used to produce baseline results and [commit b31e12](https://github.com/NVIDIA/Megatron-LM/tree/b31e1296354e979722627a6c4dedafe19b51fa97) 
-is that we disable the `tie_embedding` option in Megatron-LM, because at the time of the OSDI submission, we had not figured out an efficient implementation in Alpa to tie embedding variables.
-
-For fair comparisons, we disable the `tie_embedding` in Megatron-LM. Per our experiments, disabling this option in has very little performance 
-impact on Megatron-LM on the GPT benchmarking.
+is that we have disabled the `tie_embedding` option in Megatron-LM for fair comparisons, because at the time of the OSDI submission, we had not figured out an efficient implementation in Alpa to tie embedding variables.
+Per our experiments, disabling this option has little impact on Megatron-LM on the GPT benchmarking performance.
 
 ## Step 2: Check the environment
-We have prepared a Python virtual environment at `~/efs/megatron-env` which installs this Megatron-LM version at
+We have prepared a Python virtual environment at `~/efs/megatron-env` which installs this Megatron-LM version. 
+Activate the environment following:
 ```python
 conda deactivate
 # Switch to the Python environment for Megatron-LM

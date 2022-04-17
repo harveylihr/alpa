@@ -100,6 +100,17 @@ python3 plot_e2e.py --model wresnet
 ```
 This outputs Figure 8 (c).
 
+
+Since Megatron-LM and DeepSpeed requires different setups, we provide instructions to generate their performance numbers 
+separately as below.
+### Megatron-LM Performance on GPT (30 mins)
+Following the instructions in [megatron/setup.md](setup/setup.md) to run Megatron-LM benchmarking.
+This outputs the red bar corresponding to `Megatron-LM` in Figure 8 (a).
+
+### DeepSpeed Performance on MoE (30 mins)
+Following the instructions in [deepspeed/setup.md](setup/setup.md) to run DeepSpeed benchmarking.
+This outputs the brown bar corresponding to `DeepSpeed` in Figure 8 (b).
+
 ## Intra-op Ablation Study (Figure. 9)
 
 ### GPT  (30 min)

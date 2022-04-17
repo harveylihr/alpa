@@ -1,12 +1,9 @@
-import sys
-sys.path.append("../../benchmark/megatron/")
-
 import argparse
-from benchmark.util import run_cmd
+
 from benchmark.alpa.suite_paper_manual_gpt import gpt_specs
+from benchmark.util import run_cmd
 
-
-              # Remat, RS,   pipeline_stage_mode,   overwrite_global_config_dict
+# Remat, RS,   pipeline_stage_mode,   overwrite_global_config_dict
 fixed_params = (True,  True, "uniform_layer_gpipe", None)
 
 gpt_megatron_best_suite = {

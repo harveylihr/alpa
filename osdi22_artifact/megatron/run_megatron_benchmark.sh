@@ -10,7 +10,7 @@ usage() {
 NUM_GPUS=$1
 
 unset -v ip0 ip1 ip2 ip3
-for var ip0 ip1 ip2 ip3; do
+for var in ip0 ip1 ip2 ip3; do
   IFS= read -r "$var" || break
 done < $ROOT_DIR/alpa/osdi22_artifact/ips
 

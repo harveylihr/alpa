@@ -32,7 +32,7 @@ def benchmark_all(args):
     except KeyError:
         print(f"No available benchmark suite for {args.suite} with {num_gpus} GPUs.")
         exit()
-    output_name = f"results_e2e_{num_gpus}gpus.tsv"
+    output_name = f"results_e2e_{num_gpus}gpus"
     model = "gpt"
 
     for case in gpt_megatron_best_suite[num_gpus]:

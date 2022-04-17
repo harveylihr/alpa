@@ -25,7 +25,7 @@ case $1 in
     python benchmark_gpt.py --nproc_per_node 8
     ;;
   16)
-    ssh -o StrictHostKeyChecking=no -i /home/ubuntu/.ssh/berkeley-aws-oregon.pem ubuntu@$ip1 "source $ROOT_DIR/megatron-env/bin/activate; cd $ROOT_DIR/alpa/osdi22_artifact/megatron; python benchmark_gpt.py --nproc_per_node 8 --nnodes 2 --node_rank 1 --master_port 41000 --master_addr $ip0" &
+    ssh -o StrictHostKeyChecking=no ubuntu@$ip1 "source $ROOT_DIR/megatron-env/bin/activate; cd $ROOT_DIR/alpa/osdi22_artifact/megatron; python benchmark_gpt.py --nproc_per_node 8 --nnodes 2 --node_rank 1 --master_port 41000 --master_addr $ip0" &
     python benchmark_gpt.py --nproc_per_node 8 --nnodes 2 --node_rank 0 --master_port 41000 --master_addr $ip0
     ;;
   32)

@@ -15,6 +15,7 @@ is that we have disabled the `tie_embedding` option in Megatron-LM for fair comp
 Per our experiments, disabling this option has little impact on Megatron-LM on the GPT benchmarking performance.
 
 ## Step 2: Get the IP addresses of all nodes
+Assuming Ray has been set up on this cluster. Run the following commands:
 ```python
 cd ~/efs/osdi22_artifact/
 

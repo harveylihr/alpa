@@ -28,10 +28,10 @@ moe_deepspeed_best_suite = {
     (1024,     *moe_specs["2.4B"],  8 * 1024 // 2,   8,    1,    1,    1,   1,    16,  True,   *fixed_params,     2),
 ],
 16: [
-    (1024,     *moe_specs["10B"],  8 * 1024 // 2,   1,    16,    1,    1,   1,  512,  True,   *fixed_params,     1),
+    (1024,     *moe_specs["4.5B"],  8 * 1024 // 2,   16,    1,    1,    1,   1,   8,  True,   *fixed_params,     8),
 ],
 32: [
-    (1024,     *moe_specs["27B"],  8 * 1024 // 2,   2,    16,    1,    1,   1,    128,  True,   *fixed_params,     2)
+    (1024,     *moe_specs["10B"],  8 * 1024 // 2,   32,    1,    1,    1,   1,    8,  True,   *fixed_params,     8)
 ]
 
 }

@@ -20,7 +20,7 @@ Assuming Ray has been set up on this cluster. Run the following commands:
 cd ~/efs/osdi22_artifact/
 
 # Get the IP addresses
-python get-ips.py
+python get_ips.py
 ```
 The above script will generate a file `ips` which contains IP addresses of all nodes in the cluster. 
 

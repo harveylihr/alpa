@@ -18,7 +18,7 @@ from benchmark.util import run_cmd
 
 moe_deepspeed_best_suite = {
 1: [
-    # B,      model,  LD0,  LD1,  PD0,  PD1,  PP,  NB,   FM,   (Remat, RS, Stage), EP
+    # B,    model,  S_,   LD0, LD1, _, _,  PP,  NB, FM,    (Remat, RS, Stage), EP
     (1024,    *moe_specs["380M"], 1024 * 2,   1,    1,    1,    1,   1,    128,  True,   *fixed_params,     1),
 ],
 4: [
@@ -28,10 +28,10 @@ moe_deepspeed_best_suite = {
     (1024,     *moe_specs["2.4B"],  8 * 1024 // 2,   8,    1,    1,    1,   1,    16,  True,   *fixed_params,     2),
 ],
 16: [
-    (1024,     *moe_specs["10B"],  8 * 1024 // 2,   16,    1,    1,    1,   1,    8,  True,   *fixed_params,     8),
+    (1024,     *moe_specs["10B"],  8 * 1024 // 2,   1,    16,    1,    1,   1,  512,  True,   *fixed_params,     1),
 ],
 32: [
-    (1024,     *moe_specs["27B"],  8 * 1024 // 2,   32,    1,    1,    1,   1,    8,  True,   *fixed_params,     8),
+    (1024,     *moe_specs["27B"],  8 * 1024 // 2,   2,    16,    1,    1,   1,    128,  True,   *fixed_params,     2)
 ]
 
 }

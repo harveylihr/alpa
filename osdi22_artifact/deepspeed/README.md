@@ -41,7 +41,6 @@ Run the following command to check that the environment is working:
 python -c "import deepspeed"
 ```
 
-
 ## Step 4: Benchmark
 Run the benchmarking:
 ```python
@@ -52,13 +51,11 @@ cd ~/efs/alpa/osdi22_artifact/deepspeed
 # For example, benchmark DeepSpeed on MoE on a 32-GPU cluster
 ./run_deepspeed_benchmark.sh 32
 ```
+For the last two cases `num_gpus=16` and `num_gpus=32`, DeepSpeed cannot scale due to out-of-memory errors in all cases we have tried.
+You can also try to tune the value of `DP`, `MP`, `EP` and see if you can manually find a strategy that fits the big models (10B or 27B) onto the cluster of GPUs (16 or 32).
+
 
 ## Notes
 
-### DeepSpeed prints inconsistent TFlops
-DeepSpeed's logger calculates the TFlops incorrectly. Please ignore the values it reported and observe the final value
-reported by Alpa benchmarking code.
-
 ### Zero-1, Zero-2, and Zero-3?
-DeepSpeed MoE is not compatible with ZeRO-3. It, however, can support ZeRO-2 and ZeRO-1. We have tested both ZeRO-1 and ZeRO-2; 
-it turns out that ZeRO-2 demonstrates much better performance. Hence, in our artifact evaluation and the paper, we report the ZeRO-2 performance by default. 
+DeepSpeed MoE is not compatible with ZeRO-3. It, however, can support ZeRO-2 and ZeRO-1. We have tested both ZeRO-1 and ZeRO-2; In our experiments, ZeRO-2 demonstrates much better performance. Hence, in our artifact evaluation and the paper, we report the ZeRO-2 performance by default. 

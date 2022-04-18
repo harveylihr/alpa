@@ -135,7 +135,7 @@ def benchmark_gpt_bert_one_case(benchmark_case, output_file_name):
                                          hidden_size, vocab_size,
                                          torch.distributed.get_world_size(),
                                          np.mean(costs), True)
-        num_hosts = num_gpus // 8 + 1
+        num_hosts = 1  if num_gpus <= 8 else num_gpus // 8
         num_devices_per_host = num_gpus % 8 if num_gpus <= 8 else 8
         heads = ["exp_name", "instance", "num_hosts", "num_devices_per_host", "model_name", "method", "value", "time_stamp"]
         values = ["e2e", "p3.16", num_hosts, num_devices_per_host, "gpt", "megatron",

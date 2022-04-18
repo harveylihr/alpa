@@ -41,6 +41,11 @@ worker_nodes:
 setup_commands:
     - sudo mount -t efs fs-0919e14440bada85d:/ efs
     - sudo chmod 777 efs
+    - sudo apt-get install -y pdsh
+    - cd /tmp
+    - wget https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-linux.zip
+    - sudo unzip ninja-linux.zip -d /usr/local/bin/
+    - sudo update-alternatives --install /usr/bin/ninja ninja /usr/local/bin/ninja 1 --force
 
 head_setup_commands: []
 

@@ -273,18 +273,8 @@ if __name__ == "__main__":
                            1,
                            args.ep_world_size)
 
-        # Log results
-        # heads = ["Type", "Model Config", "Parallel Config", "P-mesh shape", "#Microbatch",
-        #          "Force DP", "Remat", "Mean Time", "Std Time", "#Params", "TFLOPs", "TFLOPs (ckpt)",
-        #          "Peak Mem"]
-        # values = ["MOE", str(model_config), str(parallel_config),
-        #           "N/A", str(num_micro_batches), "N/A",
-        #           str(args.checkpoint_activations), f"{np.mean(latencies):.3f}s", f"{np.std(latencies):.3f}",
-        #           f"{param_count/1e9:.3f}B", f"{tflops:.2f}", f"{tflops_ckpt:.2f}",
-        #           f"{alloc_mem/GB:5.3f}G"]
-
         num_gpus = torch.distributed.get_world_size()
-        num_hosts = num_gpus // 8 + 1
+        num_hosts = 1  if num_gpus <= 8 else num_gpus // 8
         num_devices_per_host = num_gpus % 8 if num_gpus <= 8 else 8
 
         heads = ["exp_name", "instance", "num_hosts", "num_devices_per_host", "model_name", "method", "value", "time_stamp"]

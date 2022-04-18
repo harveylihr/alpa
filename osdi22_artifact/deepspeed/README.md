@@ -20,14 +20,38 @@ The code modifications can be found under [benchmark/deepspeed/patch](../../benc
 
 ## Step 2: Prepare hostfiles
 ```python
+cd ~/efs/alpa/osdi22_artifact
 
+# Generate the hostfiles
+python get_hostfiles.py
+```
+The above scripts will generate multiple hostfiles in the folder `deepspeed/`, which are required by DeepSpeed for distributed execution.
+
+## Step 3: Check the environment
+We have prepared a Python virtual environment at `~/efs/deepspeed-env` which installs this DeepSpeed version.
+
+Activate the environment via:
+```python
+conda deactivate
+# Switch to the Python environment for DeepSpeed
+source ~/efs/deepspeed-env/bin/activate
+```
+Run the following command to check that the environment is working:
+```python
+python -c "import deepspeed"
 ```
 
-## Step 2: Check the environment
 
+## Step 4: Benchmark
+Run the benchmarking:
+```python
+cd ~/efs/alpa/osdi22_artifact/deepspeed
 
-## Step 3: Benchmark
-
+# Replace the [NUM_GPUS] with the number of gpus you want to benchmark with, e.g., 1, 4, 8, 16, 32.
+./run_deepspeed_benchmark.sh [NUM_GPUS]
+# For example, benchmark DeepSpeed on MoE on a 32-GPU cluster
+./run_deepspeed_benchmark.sh 32
+```
 
 ## Notes
 

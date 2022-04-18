@@ -291,4 +291,4 @@ if __name__ == "__main__":
         values = ["e2e", "p3.16", num_hosts, num_devices_per_host, "moe", "deepspeed",
                   str({"tflops": tflops_ckpt, "parameter_count": param_count / (10 ** 9)}), time.time()]
 
-        write_tsv(heads, values,f"moe_deepspeed_{args.output_name}_rank{rank}.tsv")
+        write_tsv(heads, values,f"deepspeed_{args.output_name}.tsv")

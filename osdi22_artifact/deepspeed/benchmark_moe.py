@@ -57,7 +57,7 @@ def benchmark_all(args):
     except KeyError:
         print(f"No available benchmark suite for {args.suite} with {num_gpus} GPUs.")
         exit()
-    output_name = f"results_e2e_{num_gpus}gpus.tsv"
+    output_name = f"results_e2e"
 
     warmup_iter = 1
     bench_iter = 2
@@ -66,7 +66,7 @@ def benchmark_all(args):
     config_file = "ds_zero_stage_2_moe_config.json"
 
     for case in moe_deepspeed_best_suite[num_gpus]:
-        print(">>>>>> Alpa benchmark: Working on case {}...".format(str(case)), flush=True)
+        print(">>>>>> Benchmarking DeepSpeed on case {}...".format(str(case)), flush=True)
         batch_size, seq_len, hidden_size, num_layers, num_heads, vocab_size, num_expert, _, \
         dp_size, tensor_mp_size, p_dim0, p_dim1, pipeline_mp_size, \
         num_micro_batches, force_dp, checkpoint_activations, _, _, ep_size = case

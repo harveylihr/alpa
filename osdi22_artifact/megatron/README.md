@@ -17,7 +17,7 @@ Per our experiments, disabling this option has little impact on Megatron-LM on t
 ## Step 2: Get the IP addresses of all nodes
 Assuming Ray has been set up on this cluster. Run the following commands:
 ```python
-cd ~/efs/osdi22_artifact/
+cd ~/efs/alpa/osdi22_artifact/
 
 # Get the IP addresses
 python get_ips.py

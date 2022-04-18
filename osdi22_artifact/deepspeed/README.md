@@ -53,7 +53,8 @@ cd ~/efs/alpa/osdi22_artifact/deepspeed
 ```
 For the last two cases `num_gpus=16` and `num_gpus=32`, DeepSpeed cannot scale due to out-of-memory errors in all cases we have tried.
 You can also try to tune the value of `DP`, `MP`, `EP` and see if you can manually find a strategy that fits the big models (10B or 27B) onto the cluster of GPUs (16 or 32).
-
+The main reason that DeepSpeed cannot scale is that it cannot support inter-op parallelism for MoE, while Alpa can support pipeline parallelism together with data, operator, and expert parallelism, 
+while in Alpa, the latter two are special cases of intra-op parallelisms.
 
 ## Notes
 

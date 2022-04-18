@@ -3,8 +3,8 @@ To run the Megatron-LM benchmarking, we assume you have set up the AWS cluster f
 
 ## Step 1: Check the DeepSpeed code and versions
 Verify the DeepSpeed repository on EFS:
-```python
-cd ~/efs/DeepSpeed & git log
+```bash
+cd ~/efs/DeepSpeed && git log
 ```
 
 We use the official DeepSpeed v0.5.4, at commit [bd3ebd](https://github.com/microsoft/DeepSpeed/tree/bd3ebddf3628f3f77d3460e49626c8af7825a92c), 
@@ -19,7 +19,7 @@ Hence, we implemented the following components on top of DeepSpeed's expert para
 The code modifications can be found under [benchmark/deepspeed/patch](../../benchmark/deepspeed/patch).
 
 ## Step 2: Prepare hostfiles
-```python
+```bash
 cd ~/efs/alpa/osdi22_artifact
 
 # Generate the hostfiles
@@ -31,19 +31,19 @@ The above scripts will generate multiple hostfiles in the folder `deepspeed/`, w
 We have prepared a Python virtual environment at `~/efs/deepspeed-env` which installs this DeepSpeed version.
 
 Activate the environment via:
-```python
+```bash
 conda deactivate
 # Switch to the Python environment for DeepSpeed
 source ~/efs/deepspeed-env/bin/activate
 ```
 Run the following command to check that the environment is working:
-```python
+```bash
 python -c "import deepspeed"
 ```
 
 ## Step 4: Benchmark
 Run the benchmarking:
-```python
+```bash
 cd ~/efs/alpa/osdi22_artifact/deepspeed
 
 # Replace the [NUM_GPUS] with the number of gpus you want to benchmark with, e.g., 1, 4, 8, 16, 32.

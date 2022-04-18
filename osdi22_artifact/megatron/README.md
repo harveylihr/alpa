@@ -4,8 +4,8 @@ To run the Megatron-LM benchmarking, we assume you have set up the AWS cluster f
 
 ## Step 1: Verify the Megatron-LM code
 Verify the Megatron-LM repository on EFS we have pre-cloned:
-```python
-cd ~/efs/Megatron-LM & git log
+```bash
+cd ~/efs/Megatron-LM && git log
 ```
 You should be able to see the Megatron-LM as a fork from the official [NVIDIA/Megatron-LM](https://github.com/NVIDIA/Megatron-LM) at 
 [commit b31e12](https://github.com/NVIDIA/Megatron-LM/tree/b31e1296354e979722627a6c4dedafe19b51fa97) dated at ***Oct 7, 2021***.
@@ -16,7 +16,7 @@ Per our experiments, disabling this option has little impact on Megatron-LM on t
 
 ## Step 2: Get the IP addresses of all nodes
 Assuming Ray has been set up on this cluster. Run the following commands:
-```python
+```bash
 cd ~/efs/alpa/osdi22_artifact/
 
 # Get the IP addresses
@@ -28,20 +28,20 @@ The above script will generate a file `ips` which contains IP addresses of all n
 We have prepared a Python virtual environment at `~/efs/megatron-env` which installs this Megatron-LM version.
 
 Activate the environment via:
-```python
+```bash
 conda deactivate
 # Switch to the Python environment for Megatron-LM
 source ~/efs/megatron-env/bin/activate
 ```
 
 Run the following command to check that the environment is working:
-```python
+```bash
 python -c "import megatron; import apex"
 ```
 
 ## Step 4: Benchmark
 Run the benchmarking using the provided bash script:
-```python
+```bash
 cd ~/efs/alpa/osdi22_artifact/megatron
 
 # Replace the [NUM_GPUS] with the number of gpus you want to benchmark with, e.g., 1, 4, 8, 16, 32.
@@ -74,8 +74,3 @@ by a few expert-designed (Alpa team) heuristics for GPT-3:
 - Try to figure out the largest possible value of `DP` given this largest possible micro batchsize.
 - Try to figure out a suitable value of `TMP`, while restrict the value of `TMP` to be less than the number of GPUs per node;
 - Manually adjust the value of DP and PP further to find the best-performing combination of `(DP, TMP, PP)`
-
-
-
-
-

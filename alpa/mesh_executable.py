@@ -188,7 +188,10 @@ class NormalMeshDriverExecutable(MeshDriverExecutable):
         self.input_sharding_specs, self.output_sharding_specs = get_input_output_sharding_specs(
             hlo_module, avals, out_avals, physical_mesh.num_devices,
             strategy_config.logical_mesh_shape)
-
+        print("## input_sharding_specs")
+        print(self.input_sharding_specs)
+        print("## output_sharding_specs")
+        print(self.output_sharding_specs)
         # Cache results for input and output sharding
         self.input_indices = [
             pxla.spec_to_indices(aval.shape, spec)
@@ -196,7 +199,11 @@ class NormalMeshDriverExecutable(MeshDriverExecutable):
         ]
         self.outs_handler = physical_mesh.get_outputs_handler(
             out_avals, self.output_sharding_specs)
-
+        with open("logs/demo_sharded_input_indices.txt","w") as f:
+            for x in self.input_indices:
+                f.write("".join(str(x)))
+                f.write("\n")    
+      
         # Send the executable to workers
         self.exec_uuid = next_mesh_executable_uuid()
         self.set_executable(physical_mesh, hlo_module, strategy_config)
@@ -212,6 +219,7 @@ class NormalMeshDriverExecutable(MeshDriverExecutable):
         """Put the executable on workers."""
         if isinstance(physical_mesh, DistributedPhysicalDeviceMesh):
             hlo_proto = hlo_module.as_serialized_hlo_module_proto()
+            # print(hlo_proto)
             for w in physical_mesh.workers:
                 w.put_executable.remote(self.exec_uuid,
                                         NormalMeshWorkerExecutable, hlo_proto,
@@ -229,6 +237,8 @@ class NormalMeshDriverExecutable(MeshDriverExecutable):
                                                     strategy_config,
                                                     physical_mesh.num_devices)
             self.hlo_text = self.compiled.hlo_modules()[0].to_string()
+            with open("logs/compiled_hlo_after_autosharding.txt","w") as f:
+                f.write(self.get_hlo_text())
 
     def get_driver_callable(self):
         """Get a callable that runs on the driver and handles arguments/outputs conversion."""

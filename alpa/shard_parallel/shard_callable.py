@@ -5,7 +5,7 @@ import time
 from typing import Callable, Sequence, Optional
 
 import numpy as np
-
+from google.protobuf import text_format
 from jax import linear_util as lu, disable_jit
 from jax._src.lib import xla_bridge as xb
 from jax.core import (Jaxpr, ClosedJaxpr, Literal, new_jaxpr_eqn, gensym,
@@ -172,7 +172,8 @@ def shard_parallel_internal(
 
     # Trace to get jaxpr
     jaxpr, out_avals, consts = pe.trace_to_jaxpr_final(fun, avals)
-
+    print("jaxpr:")
+    print(jaxpr)
     # Convert jaxpr to XLA HLO
     name = f"{fun.__name__}_shard_parallel"
     backend = xb.get_backend("gpu")
@@ -180,8 +181,18 @@ def shard_parallel_internal(
                                      donated_invars, backend)
     flop_count = xla_extension.hlo_module_count_flop_dot_conv_only(
         built.as_hlo_module())
-
-    # Compile a XLA executable
+    print("### HLO BFFORE Auto Sharding ### ")       
+    print("as_hlo_dot_graph:")
+    print(built.as_hlo_dot_graph())
+    print("as_hlo_text:")
+    print(built.as_hlo_text())
+    print("as_hlo_module:")
+    print(built.as_hlo_module())
+    with open("demo_hlo_before_autosharding.txt","w") as f:
+        f.write(built.as_hlo_text())
+    with open("demo_hlo_before_autosharding.dot","w") as f:
+        f.write(built.as_hlo_dot_graph())    
+    # Compile a XLA executabl    
     if strategy_config is None:
         hlo_module, strategy_config = run_auto_sharding_pass(
             built,
@@ -198,7 +209,15 @@ def shard_parallel_internal(
 
     if global_config.print_xla_compilation_time:
         print(f" - XLA Compilation time: {time.time() - tic:.2f} s")
-
+    print("## strategy_config after autosharding:")
+    print(strategy_config.to_jsonable())
+    with open("logs/demo_hlo_after_autosharding.txt","w") as f:
+        f.write(hlo_module.to_string())
+    with open("logs/demo_hlo_after_autosharding.dot","w") as f:
+        f.write(xc._xla.hlo_module_to_dot_graph(
+        hlo_module))      
+    with open("logs/demo_shardconfig_after_autosharding.txt","w") as f:
+        f.write("".join(str(strategy_config.to_jsonable())))  
     # Compile a mesh executable
     executable = NormalMeshDriverExecutable(physical_mesh,
                                             hlo_module,

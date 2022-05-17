@@ -59,8 +59,8 @@ class MLPModel(nn.Module):
             x = nn.relu(x)
         return x
 
-dim = 2048
-batch_size = 2048
+dim = 512
+batch_size = 512
 num_layers = 10
 
 # Generate ground truth W and b
@@ -191,6 +191,6 @@ GB = 1024 ** 3
 
 executable = jit_train_step.lower(state, batch).compile().runtime_executable()
 print(f"Serial execution per GPU memory usage: {executable.total_allocation_size() / GB:.2f} GB")
-
+executable = alpa_train_step.preshard_dynamic_args(state, batch)
 executable = alpa_train_step.get_executable(state, batch)
 print(f"Parallel execution per GPU memory usage: {executable.get_total_allocation_size() / GB:.2f} GB")

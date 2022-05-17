@@ -237,18 +237,18 @@ def solve_auto_sharding(computation, cluster_env, solver_option=None):
 
     # Build all constants for ILP
     N = len(computation.instructions)
-    M = cluster_env.memory_per_device
+    M = cluster_env.memory_per_device # Memory per device
 
-    s_len = []
-    follow_pair = []
-    E = []
-    A = []
-    L = []
-    c = []
-    d = []
-    m = []
-    r = []
-    v = []
+    s_len = [] # strategy length
+    follow_pair = [] 
+    E = [] # Edge {i,j}
+    A = [] # Alias 
+    L = [] # liveness
+    c = [] # compute costs
+    d = [] # communication costs
+    m = [] # memory costs
+    r = [] # Resharding cost matrix (#Strategies_pre * #Strategies_next) * (N-1)
+    v = [] # 
     for i in range(N):
         ins = computation.instructions[i]
         s_len.append(len(ins.strategies))

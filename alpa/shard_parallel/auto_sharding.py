@@ -65,7 +65,8 @@ class LogicalDeviceMesh:
             mesh_beta = [1] * len(self.id_mesh.shape)
         self.mesh_alpha = tuple(mesh_alpha)
         self.mesh_beta = tuple(mesh_beta)
-
+        # print('mesh_alpha=',self.mesh_alpha)
+        # print('mesh_beta=',self.mesh_beta)
     @property
     def shape(self):
         return self.id_mesh.shape
@@ -773,7 +774,7 @@ def _call_solver_serialized_args(
                 if v[idx][row * C + col] > 0.5:
                     prob += s[i][row] + s[j][col] <= 1
 
-    verbose = False
+    verbose = True # HLI: enable ILP printout
 
     msg = verbose
     time_limit = 600

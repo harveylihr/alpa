@@ -339,7 +339,7 @@ class HloParameter(HloInstruction):
                 self.memory_costs.append(compute_bytes(self.shape) / output_spec.num_tile_devices())
 
         self.strategies.append(InstructionStrategy("R", ShardingSpec.replicated(cluster_env)))
-        self.compute_costs.append(2)
+        self.compute_costs.append(2)#HLI TODO: why cost=2 for 'R'
         self.communication_costs.append(0)
         self.memory_costs.append(compute_bytes(self.shape))
 

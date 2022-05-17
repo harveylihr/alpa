@@ -203,38 +203,38 @@ manual_pipeline_train_step.get_executable(manual_pipeline_state,
 #    pipeline execution latency.
 
 
-# Create a new cluster class for automatic pipeline parallelism.
-device_cluster = alpa.DeviceCluster()
-devices = device_cluster.get_virtual_physical_mesh()
-# Set pipeline stage mode to "auto_gpipe" to enable automatic
-# parallelism with automatic stage slicing and mesh assignment.
-alpa.set_parallelize_options(
-    devices=devices, strategy="pipeshard_parallel",
-    pipeline_stage_mode="auto_gpipe", num_micro_batches=num_micro_batches)
+# # Create a new cluster class for automatic pipeline parallelism.
+# device_cluster = alpa.DeviceCluster()
+# devices = device_cluster.get_virtual_physical_mesh()
+# # Set pipeline stage mode to "auto_gpipe" to enable automatic
+# # parallelism with automatic stage slicing and mesh assignment.
+# alpa.set_parallelize_options(
+#     devices=devices, strategy="pipeshard_parallel",
+#     pipeline_stage_mode="auto_gpipe", num_micro_batches=num_micro_batches)
 
-# Define training step with automatic pipeline-operator parallelism. Note that
-# we reuse the same model and state as the single device case. The only
-# modification required is the two decorators. The stage construction and
-# mesh slicing are performed within the `parallelize` decorator.
-@alpa.parallelize
-def auto_pipeline_train_step(state, batch):
-    # Indicate that we use automatic layer construction. The `layer_num` here
-    # is a hyperparameter to control how many layers we get from the
-    # layer construction algorithm.
-    @alpa.automatic_layer_construction(layer_num=2)
-    def loss_func(params):
-        out = state.apply_fn(params, batch["x"])
-        loss = jnp.mean((out - batch["y"])**2)
-        return loss
+# # Define training step with automatic pipeline-operator parallelism. Note that
+# # we reuse the same model and state as the single device case. The only
+# # modification required is the two decorators. The stage construction and
+# # mesh slicing are performed within the `parallelize` decorator.
+# @alpa.parallelize
+# def auto_pipeline_train_step(state, batch):
+#     # Indicate that we use automatic layer construction. The `layer_num` here
+#     # is a hyperparameter to control how many layers we get from the
+#     # layer construction algorithm.
+#     @alpa.automatic_layer_construction(layer_num=2)
+#     def loss_func(params):
+#         out = state.apply_fn(params, batch["x"])
+#         loss = jnp.mean((out - batch["y"])**2)
+#         return loss
 
-    # Again, we use `alpa.grad` here to seperate the apply gradient stage with
-    # the forward/backward stages in the pipeline.
-    grads = alpa.grad(loss_func)(state.params)
-    new_state = state.apply_gradients(grads=grads)
-    return new_state
+#     # Again, we use `alpa.grad` here to seperate the apply gradient stage with
+#     # the forward/backward stages in the pipeline.
+#     grads = alpa.grad(loss_func)(state.params)
+#     new_state = state.apply_gradients(grads=grads)
+#     return new_state
 
-auto_pipeline_actual_state = auto_pipeline_train_step(state, batch)
-assert_allclose(expected_state.params, auto_pipeline_actual_state.params,
-                atol=5e-3)
+# auto_pipeline_actual_state = auto_pipeline_train_step(state, batch)
+# assert_allclose(expected_state.params, auto_pipeline_actual_state.params,
+#                 atol=5e-3)
 
-auto_pipeline_train_step.get_executable(state, batch).shutdown()
+# auto_pipeline_train_step.get_executable(state, batch).shutdown()

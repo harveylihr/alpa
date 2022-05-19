@@ -294,6 +294,8 @@ def run_auto_sharding_pass(
             "auto_sharding::force_strategy": False,
             "auto_sharding::force_strategy_inst_indices": [],
             "auto_sharding::force_strategy_stra_names": [],
+
+            #HLI: Define THRIVE-DSE options here
     }):
         compiled_module = xe.run_auto_sharding(xla_computation, compile_options)
 
@@ -579,7 +581,7 @@ def _call_solver_serialized_args(
         m_np,
         r_np,
         v_np,
-        s_init_np=None):
+        s_init_np=None, allow_temporal_tile=False):
     """Call the solver with serialized arguments."""
     global last_s_val, last_objective
 

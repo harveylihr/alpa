@@ -164,7 +164,7 @@ class ShardingSpec:
     def tile_internal(shape, tensor_dims, mesh_dims, cluster_env, partial_reduce_replication):
         assert len(tensor_dims) == len(mesh_dims)
 
-        tile_assignment_dimensions = [1] * len(shape)
+        tile_assignment_dimensions = [1] * len(shape) #HLI: tensor shape
 
         # Split on certain mesh dimensions
         split_prod = 1
@@ -330,14 +330,30 @@ class HloParameter(HloInstruction):
                 if (cluster_env.device_mesh.shape[j] == 1 or
                     self.shape[i] < cluster_env.device_mesh.shape[j]):
                     continue
-
-                name = f"S{i} @ {j}"
-                output_spec = ShardingSpec.tile(self.shape, [i], [j], cluster_env)
-                self.strategies.append(InstructionStrategy(name, output_spec))
-                self.compute_costs.append(0)
-                self.communication_costs.append(0)
-                self.memory_costs.append(compute_bytes(self.shape) / output_spec.num_tile_devices())
-
+                # HLI: Only support split only one dimension
+                if solver_option.allow_temporal_tile:
+                    for tsize in solver_option.temporal_tile_size_options: # Only support the same tiling size
+                        self.tile_shape = list(self.shape)
+                        for k in range(len(self.tile_shape)):
+                            self.tile_shape[k] = tsize
+                        self.tile_shape[i] = self.shape[i] / cluster_env.device_mesh.shape[j] # Splitted dimension still use the splitted tile size
+                        name = f"S{i} @ {j}; temp_tile_on_R(tsize={tsize}, #buffer={solver_option.num_temporal_buffer_per_device} )"
+                        # print("HloParameter, shape = ",self.shape,"temporally tiled.")
+                        # print("tile_shape = ",self.tile_shape)
+                        output_spec = ShardingSpec.tile(self.shape, [i], [j], cluster_env)
+                        self.strategies.append(InstructionStrategy(name, output_spec))
+                        self.compute_costs.append(0)
+                        self.communication_costs.append(0)
+                        self.memory_costs.append(compute_bytes(self.tile_shape) * solver_option.num_temporal_buffer_per_device)                    
+                        # print("HloParameter: tiled, memory cost = ",compute_bytes(self.tile_shape) * solver_option.num_temporal_buffer_per_device)
+                else:
+                    name = f"S{i} @ {j}"
+                    output_spec = ShardingSpec.tile(self.shape, [i], [j], cluster_env)
+                    self.strategies.append(InstructionStrategy(name, output_spec))
+                    self.compute_costs.append(0)
+                    self.communication_costs.append(0)
+                    self.memory_costs.append(compute_bytes(self.shape) / output_spec.num_tile_devices())
+                    
         self.strategies.append(InstructionStrategy("R", ShardingSpec.replicated(cluster_env)))
         self.compute_costs.append(2)#HLI TODO: why cost=2 for 'R'
         self.communication_costs.append(0)

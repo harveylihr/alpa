@@ -209,13 +209,16 @@ class CostGraph:
 
 
 class SolverOption:
-    def __init__(self):
+    def __init__(self,allow_temporal_tile=False, temporal_tile_size_options=[],num_temporal_buffer_per_device=2):
         self.force_batch_dim_to_mesh_dim = None
 
         self.forward_backward_sep_id = None
         self.force_all_reduce_cost = None
         self.force_all_gather_cost = None
         self.force_reduce_scatter_cost = None
+        self.allow_temporal_tile = allow_temporal_tile # HLI: Allow temporal tiling
+        self.temporal_tile_size_options = temporal_tile_size_options # HLI: tiling options for each dimension
+        self.num_temporal_buffer_per_device = num_temporal_buffer_per_device # HLI: how many  
 
 
 def solve_auto_sharding(computation, cluster_env, solver_option=None):

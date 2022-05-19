@@ -6,26 +6,39 @@ from common import compute_bytes
 def test_tile():
     cluster_env = ClusterEnvironment([[0, 1, 2], [3, 4, 5]], [1,1], [1,1], None)
 
+#   0 | 1 | 2
+#   3 | 4 | 5
+
     sharding = ShardingSpec.tile((12, 12), [0, 1], [0, 1], cluster_env)
-    assert sharding.tile_assignment_dimensions == (2, 3)
-    assert sharding.tile_assignment_devices == (0, 1, 2, 3, 4, 5)
+    assert sharding.tile_assignment_dimensions == (2, 3) #12x12 will be tiled to 2x3 tile dim, each tile=6x4
+    assert sharding.tile_assignment_devices == (0, 1, 2, 3, 4, 5) #HLI: assign tensor dim 0 to device 0,1,2
     assert sharding.replicate_on_last_tile_dim == False
+
 
     sharding = ShardingSpec.tile((12, 12), [1, 0], [1, 0], cluster_env)
     assert sharding.tile_assignment_dimensions == (2, 3)
     assert sharding.tile_assignment_devices == (0, 1, 2, 3, 4, 5)
     assert sharding.replicate_on_last_tile_dim == False
 
+
+#   0 | 3
+#   1 | 4
+#   2 | 5
     sharding = ShardingSpec.tile((12, 12), [0, 1], [1, 0], cluster_env)
     assert sharding.tile_assignment_dimensions == (3, 2)
     assert sharding.tile_assignment_devices == (0, 3, 1, 4, 2, 5)
     assert sharding.replicate_on_last_tile_dim == False
 
+#   0 & 1 & 2
+#   3 & 4 & 5
     sharding = ShardingSpec.tile((12, 12), [0], [0], cluster_env)
-    assert sharding.tile_assignment_dimensions == (2, 1, 3)
+    assert sharding.tile_assignment_dimensions == (2, 1, 3) #replicate on remaining mesh dimensions
     assert sharding.tile_assignment_devices == (0, 1, 2, 3, 4, 5)
     assert sharding.replicate_on_last_tile_dim == True
 
+#   0 & 3 
+#   1 & 4
+#   2 & 5
     sharding = ShardingSpec.tile((12, 12), [0], [1], cluster_env)
     assert sharding.tile_assignment_dimensions == (3, 1, 2)
     assert sharding.tile_assignment_devices == (0, 3, 1, 4, 2, 5)

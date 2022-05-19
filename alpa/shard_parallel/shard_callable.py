@@ -188,9 +188,9 @@ def shard_parallel_internal(
     print(built.as_hlo_text())
     print("as_hlo_module:")
     print(built.as_hlo_module())
-    with open("demo_hlo_before_autosharding.txt","w") as f:
+    with open("logs/demo_hlo_text_before_autosharding.hlo","w") as f:
         f.write(built.as_hlo_text())
-    with open("demo_hlo_before_autosharding.dot","w") as f:
+    with open("logs/emo_hlo_graph_before_autosharding.dot","w") as f:
         f.write(built.as_hlo_dot_graph())    
     # Compile a XLA executabl    
     if strategy_config is None:
@@ -211,9 +211,9 @@ def shard_parallel_internal(
         print(f" - XLA Compilation time: {time.time() - tic:.2f} s")
     print("## strategy_config after autosharding:")
     print(strategy_config.to_jsonable())
-    with open("logs/demo_hlo_after_autosharding.txt","w") as f:
+    with open("logs/demo_hlo_txt_after_autosharding.hlo","w") as f:
         f.write(hlo_module.to_string())
-    with open("logs/demo_hlo_after_autosharding.dot","w") as f:
+    with open("logs/demo_hlo_graph_after_autosharding.dot","w") as f:
         f.write(xc._xla.hlo_module_to_dot_graph(
         hlo_module))      
     with open("logs/demo_shardconfig_after_autosharding.txt","w") as f:

@@ -21,12 +21,13 @@ INF_COST = 1e10  # infinity cost
 
 class ShardingSpec:
     def __init__(self, type_, tile_assignment_dimensions, tile_assignment_devices,
-                 replicate_on_last_tile_dim, partial_reduce_replication):
+                 replicate_on_last_tile_dim, partial_reduce_replication, temporal_tile_size=-1):
         self.type = type_
         self.tile_assignment_dimensions = tuple(tile_assignment_dimensions)
         self.tile_assignment_devices = tuple(tile_assignment_devices)
         self.replicate_on_last_tile_dim = replicate_on_last_tile_dim
         self.partial_reduce_replication = partial_reduce_replication
+        self.temporal_tile_size_per_dim = temporal_tile_size #output temporal tile size
 
     def num_tile_devices(self):
         if self.type == ShardingSpecType.REPLICATED:
@@ -37,6 +38,20 @@ class ShardingSpec:
         if self.replicate_on_last_tile_dim:
             ret /= self.tile_assignment_dimensions[-1]
         return ret
+
+    def temporal_tile_shape(self, shape):
+        temp_tile_shape=[]
+        if self.type == ShardingSpecType.REPLICATED:
+            return list(shape)
+        assert self.type == ShardingSpecType.OTHER 
+        for dim in range(len(shape)):
+            temp_tile_shape.append(shape[dim]/self.tile_assignment_dimensions[dim])
+        if self.replicate_on_last_tile_dim: # currently only support temporal tiling on replicate dimension
+            if self.temporal_tile_size_per_dim > 0 and self.temporal_tile_size_per_dim < shape[-1]:
+                temp_tile_shape[-1] = (self.temporal_tile_size_per_dim)
+            # else:
+            #     temp_tile_shape.append(shape[-1])
+        return temp_tile_shape
 
     def transpose(self, dimensions):
         if self.type == ShardingSpecType.REPLICATED:
@@ -160,8 +175,10 @@ class ShardingSpec:
                                    self.partial_reduce_replication)
         return output_spec
 
+
+
     @staticmethod
-    def tile_internal(shape, tensor_dims, mesh_dims, cluster_env, partial_reduce_replication):
+    def tile_internal(shape, tensor_dims, mesh_dims, cluster_env, partial_reduce_replication, temporal_tile_size=-1):
         assert len(tensor_dims) == len(mesh_dims)
 
         tile_assignment_dimensions = [1] * len(shape) #HLI: tensor shape
@@ -206,11 +223,11 @@ class ShardingSpec:
         return ShardingSpec(ShardingSpecType.OTHER,
                             tile_assignment_dimensions, tile_assignment_devices,
                             replicate_on_last_tile_dim,
-                            False)
+                            False, temporal_tile_size)
 
     @staticmethod
-    def tile(shape, tensor_dims, mesh_dims, cluster_env):
-        return ShardingSpec.tile_internal(shape, tensor_dims, mesh_dims, cluster_env, False)
+    def tile(shape, tensor_dims, mesh_dims, cluster_env, temporal_tile_size=-1):
+        return ShardingSpec.tile_internal(shape, tensor_dims, mesh_dims, cluster_env, False, temporal_tile_size)
 
     @staticmethod
     def tile_partial_reduce(shape, tensor_dims, mesh_dims, cluster_env):
@@ -265,7 +282,6 @@ class InstructionStrategy:
     def __init__(self, name, output_spec):
         self.name = name
         self.output_spec = output_spec
-
 
 class OpCode(Enum):
     PARAMETER = auto()
@@ -331,20 +347,20 @@ class HloParameter(HloInstruction):
                     self.shape[i] < cluster_env.device_mesh.shape[j]):
                     continue
                 # HLI: Only support split only one dimension
-                if solver_option.allow_temporal_tile:
+                if solver_option.temporal_tile_size_options != None: # allow temporal tiling
                     for tsize in solver_option.temporal_tile_size_options: # Only support the same tiling size
-                        self.tile_shape = list(self.shape)
-                        for k in range(len(self.tile_shape)):
-                            self.tile_shape[k] = tsize
-                        self.tile_shape[i] = self.shape[i] / cluster_env.device_mesh.shape[j] # Splitted dimension still use the splitted tile size
-                        name = f"S{i} @ {j}; temp_tile_on_R(tsize={tsize}, #buffer={solver_option.num_temporal_buffer_per_device} )"
+                        # self.tile_shape = list(self.shape)
+                        # for k in range(len(self.tile_shape)):
+                            # self.tile_shape[k] = tsize
+                        # self.tile_shape[i] = self.shape[i] / cluster_env.device_mesh.shape[j] # Only the S dimension still use the splitted tile size
+                        name = f"S{i} @ {j}; temporal_tile_on_R(tsize={tsize}, temp_buffer={solver_option.num_temporal_buffer_per_device})"
                         # print("HloParameter, shape = ",self.shape,"temporally tiled.")
                         # print("tile_shape = ",self.tile_shape)
-                        output_spec = ShardingSpec.tile(self.shape, [i], [j], cluster_env)
+                        output_spec = ShardingSpec.tile(self.shape, [i], [j], cluster_env, tsize)
                         self.strategies.append(InstructionStrategy(name, output_spec))
                         self.compute_costs.append(0)
                         self.communication_costs.append(0)
-                        self.memory_costs.append(compute_bytes(self.tile_shape) * solver_option.num_temporal_buffer_per_device)                    
+                        self.memory_costs.append(compute_bytes(output_spec.temporal_tile_shape(self.shape)) * solver_option.num_temporal_buffer_per_device)                    
                         # print("HloParameter: tiled, memory cost = ",compute_bytes(self.tile_shape) * solver_option.num_temporal_buffer_per_device)
                 else:
                     name = f"S{i} @ {j}"
@@ -724,68 +740,141 @@ class HloDot(HloInstruction):
         # Split lhs space dim + contracting dim
         # @ {0, 1}
         if cluster_env.device_mesh.shape[1] > 1:
-            output_spec = ShardingSpec.tile(self.shape, [space_base_dim], [0], cluster_env)
-            memory_cost = compute_bytes(self.shape) / output_spec.num_tile_devices()
-            self.strategies.append(
-                InstructionStrategy("SR = SS x SR @ {0,1} (allreduce @ 1)", output_spec))
-            self.compute_costs.append(0)
-            self.communication_costs.append(cluster_env.all_reduce_cost(memory_cost, 1))
-            self.memory_costs.append(memory_cost)
-            self.resharding_costs.append([
-                resharding_cost_vector(cluster_env, lhs,
-                    ShardingSpec.tile(lhs.shape, [lhs_space_dim, lhs_con_dim], [0, 1], cluster_env)),
-                resharding_cost_vector(cluster_env, rhs,
-                    ShardingSpec.tile(rhs.shape, [rhs_con_dim], [1], cluster_env))
-            ])
+            if solver_option.temporal_tile_size_options != None:
+                for tsize in solver_option.temporal_tile_size_options:
+                    
+                    output_spec = ShardingSpec.tile(self.shape, [space_base_dim], [0], cluster_env, tsize)
+                    memory_cost = compute_bytes(output_spec.temporal_tile_shape(self.shape)) * solver_option.num_temporal_buffer_per_device
+                    self.strategies.append(
+                        InstructionStrategy("SR = SS x SR @ {0,1} (allreduce @ 1) output_temporal_tile_on_R(tsize={%d}, temp_buffer=%d)" % (tsize,solver_option.num_temporal_buffer_per_device) , output_spec))
+
+                    self.compute_costs.append(0)
+                    self.communication_costs.append(cluster_env.all_reduce_cost(memory_cost, 1))
+                    self.memory_costs.append(memory_cost)
+                    self.resharding_costs.append([
+                        resharding_cost_vector(cluster_env, lhs,
+                            ShardingSpec.tile(lhs.shape, [lhs_space_dim, lhs_con_dim], [0, 1], cluster_env)),
+                        resharding_cost_vector(cluster_env, rhs,
+                            ShardingSpec.tile(rhs.shape, [rhs_con_dim], [1], cluster_env))
+                    ])                    
+            else:
+                output_spec = ShardingSpec.tile(self.shape, [space_base_dim], [0], cluster_env)
+                memory_cost = compute_bytes(self.shape) / output_spec.num_tile_devices()
+                self.strategies.append(
+                    InstructionStrategy("SR = SS x SR @ {0,1} (allreduce @ 1)", output_spec))
+                self.compute_costs.append(0)
+                self.communication_costs.append(cluster_env.all_reduce_cost(memory_cost, 1))
+                self.memory_costs.append(memory_cost)
+                self.resharding_costs.append([
+                    resharding_cost_vector(cluster_env, lhs,
+                        ShardingSpec.tile(lhs.shape, [lhs_space_dim, lhs_con_dim], [0, 1], cluster_env)),
+                    resharding_cost_vector(cluster_env, rhs,
+                        ShardingSpec.tile(rhs.shape, [rhs_con_dim], [1], cluster_env))
+                ])
 
         # @ {1, 0}
         if cluster_env.device_mesh.shape[0] > 1:
-            output_spec = ShardingSpec.tile(self.shape, [space_base_dim], [1], cluster_env)
-            memory_cost = compute_bytes(self.shape) / output_spec.num_tile_devices()
-            self.strategies.append(
-                InstructionStrategy("SR = SS x SR @ {1,0} (allreduce @ 0)", output_spec))
-            self.compute_costs.append(0)
-            self.communication_costs.append(cluster_env.all_reduce_cost(memory_cost, 0))
-            self.memory_costs.append(memory_cost)
-            self.resharding_costs.append([
-                resharding_cost_vector(cluster_env, lhs,
-                    ShardingSpec.tile(lhs.shape, [lhs_space_dim, lhs_con_dim], [1, 0], cluster_env)),
-                resharding_cost_vector(cluster_env, rhs,
-                    ShardingSpec.tile(rhs.shape, [rhs_con_dim], [0], cluster_env))
-            ])
+            if solver_option.temporal_tile_size_options != None:
+                for tsize in solver_option.temporal_tile_size_options:
+                    
+                    output_spec = ShardingSpec.tile(self.shape, [space_base_dim], [1], cluster_env, tsize)
+                    memory_cost = compute_bytes(output_spec.temporal_tile_shape(self.shape)) * solver_option.num_temporal_buffer_per_device
+                    self.strategies.append(
+                        InstructionStrategy("SR = SS x SR @ {1,0} (allreduce @ 0) output_temporal_tile_on_R(tsize={%d}, temp_buffer=%d)" % (tsize,solver_option.num_temporal_buffer_per_device) , output_spec))
+                    
+                    self.compute_costs.append(0)
+                    self.communication_costs.append(cluster_env.all_reduce_cost(memory_cost, 0))
+                    self.memory_costs.append(memory_cost)
+                    self.resharding_costs.append([
+                        resharding_cost_vector(cluster_env, lhs,
+                            ShardingSpec.tile(lhs.shape, [lhs_space_dim, lhs_con_dim], [1, 0], cluster_env)),
+                        resharding_cost_vector(cluster_env, rhs,
+                            ShardingSpec.tile(rhs.shape, [rhs_con_dim], [0], cluster_env))
+                    ])               
+            else:            
+                output_spec = ShardingSpec.tile(self.shape, [space_base_dim], [1], cluster_env)
+                memory_cost = compute_bytes(self.shape) / output_spec.num_tile_devices()
+                self.strategies.append(
+                    InstructionStrategy("SR = SS x SR @ {1,0} (allreduce @ 0)", output_spec))
+                self.compute_costs.append(0)
+                self.communication_costs.append(cluster_env.all_reduce_cost(memory_cost, 0))
+                self.memory_costs.append(memory_cost)
+                self.resharding_costs.append([
+                    resharding_cost_vector(cluster_env, lhs,
+                        ShardingSpec.tile(lhs.shape, [lhs_space_dim, lhs_con_dim], [1, 0], cluster_env)),
+                    resharding_cost_vector(cluster_env, rhs,
+                        ShardingSpec.tile(rhs.shape, [rhs_con_dim], [0], cluster_env))
+                ])
 
         # Split rhs space dim + contracting dim
         # @ {0, 1}
         if cluster_env.device_mesh.shape[0] > 1 and cluster_env.device_mesh.shape[1] > 1:
-            output_spec = ShardingSpec.tile(self.shape, [space_base_dim+1], [1], cluster_env)
-            memory_cost = compute_bytes(self.shape) / output_spec.num_tile_devices()
-            self.strategies.append(
-                InstructionStrategy("RS = RS x SS @ {0,1} (allreduce @ 0)", output_spec))
-            self.compute_costs.append(0)
-            self.communication_costs.append(cluster_env.all_reduce_cost(memory_cost, 0))
-            self.memory_costs.append(memory_cost)
-            self.resharding_costs.append([
-                resharding_cost_vector(cluster_env, lhs,
-                    ShardingSpec.tile(lhs.shape, [lhs_con_dim], [0], cluster_env)),
-                resharding_cost_vector(cluster_env, rhs,
-                    ShardingSpec.tile(rhs.shape, [rhs_con_dim, rhs_space_dim], [0, 1], cluster_env))
-            ])
+            if solver_option.temporal_tile_size_options != None:
+                for tsize in solver_option.temporal_tile_size_options:    
+
+                    output_spec = ShardingSpec.tile(self.shape, [space_base_dim+1], [1], cluster_env,tsize)
+                    memory_cost = compute_bytes(output_spec.temporal_tile_shape(self.shape)) * solver_option.num_temporal_buffer_per_device
+                    self.strategies.append(
+                        InstructionStrategy("RS = RS x SS @ {0,1} (allreduce @ 0) output_temporal_tile_on_R(tsize={%d}, temp_buffer=%d)" % (tsize,solver_option.num_temporal_buffer_per_device), output_spec))
+
+                    self.compute_costs.append(0)
+                    self.communication_costs.append(cluster_env.all_reduce_cost(memory_cost, 0))
+                    self.memory_costs.append(memory_cost)
+                    self.resharding_costs.append([
+                        resharding_cost_vector(cluster_env, lhs,
+                            ShardingSpec.tile(lhs.shape, [lhs_con_dim], [0], cluster_env)),
+                        resharding_cost_vector(cluster_env, rhs,
+                            ShardingSpec.tile(rhs.shape, [rhs_con_dim, rhs_space_dim], [0, 1], cluster_env))
+                    ])
+            
+            else:              
+                output_spec = ShardingSpec.tile(self.shape, [space_base_dim+1], [1], cluster_env)
+                memory_cost = compute_bytes(self.shape) / output_spec.num_tile_devices()
+                self.strategies.append(
+                    InstructionStrategy("RS = RS x SS @ {0,1} (allreduce @ 0)", output_spec))
+                self.compute_costs.append(0)
+                self.communication_costs.append(cluster_env.all_reduce_cost(memory_cost, 0))
+                self.memory_costs.append(memory_cost)
+                self.resharding_costs.append([
+                    resharding_cost_vector(cluster_env, lhs,
+                        ShardingSpec.tile(lhs.shape, [lhs_con_dim], [0], cluster_env)),
+                    resharding_cost_vector(cluster_env, rhs,
+                        ShardingSpec.tile(rhs.shape, [rhs_con_dim, rhs_space_dim], [0, 1], cluster_env))
+                ])
 
         # @ {1, 0}
         if cluster_env.device_mesh.shape[0] > 1 and cluster_env.device_mesh.shape[1] > 1:
-            output_spec = ShardingSpec.tile(self.shape, [space_base_dim+1], [0], cluster_env)
-            memory_cost = compute_bytes(self.shape) / output_spec.num_tile_devices()
-            self.strategies.append(
-                InstructionStrategy("RS = RS x SS @ {1,0} (allreduce @ 1)", output_spec))
-            self.compute_costs.append(0)
-            self.communication_costs.append(cluster_env.all_reduce_cost(memory_cost, 1))
-            self.memory_costs.append(memory_cost)
-            self.resharding_costs.append([
-                resharding_cost_vector(cluster_env, lhs,
-                    ShardingSpec.tile(lhs.shape, [lhs_con_dim], [1], cluster_env)),
-                resharding_cost_vector(cluster_env, rhs,
-                    ShardingSpec.tile(rhs.shape, [rhs_con_dim, rhs_space_dim], [1, 0], cluster_env))
-            ])
+            if solver_option.temporal_tile_size_options != None:
+                for tsize in solver_option.temporal_tile_size_options:  
+                    output_spec = ShardingSpec.tile(self.shape, [space_base_dim+1], [0], cluster_env, tsize)
+                    memory_cost = compute_bytes(output_spec.temporal_tile_shape(self.shape)) * solver_option.num_temporal_buffer_per_device
+                    self.strategies.append(
+                        InstructionStrategy("RS = RS x SS @ {1,0} (allreduce @ 1) output_temporal_tile_on_R(tsize={%d}, temp_buffer=%d)" % (tsize,solver_option.num_temporal_buffer_per_device), output_spec))
+                    self.compute_costs.append(0)
+                    self.communication_costs.append(cluster_env.all_reduce_cost(memory_cost, 1))
+                    self.memory_costs.append(memory_cost)
+                    self.resharding_costs.append([
+                        resharding_cost_vector(cluster_env, lhs,
+                            ShardingSpec.tile(lhs.shape, [lhs_con_dim], [1], cluster_env)),
+                        resharding_cost_vector(cluster_env, rhs,
+                            ShardingSpec.tile(rhs.shape, [rhs_con_dim, rhs_space_dim], [1, 0], cluster_env))
+                    ])
+                
+            
+            else:
+                output_spec = ShardingSpec.tile(self.shape, [space_base_dim+1], [0], cluster_env)
+                memory_cost = compute_bytes(self.shape) / output_spec.num_tile_devices()
+                self.strategies.append(
+                    InstructionStrategy("RS = RS x SS @ {1,0} (allreduce @ 1)", output_spec))
+                self.compute_costs.append(0)
+                self.communication_costs.append(cluster_env.all_reduce_cost(memory_cost, 1))
+                self.memory_costs.append(memory_cost)
+                self.resharding_costs.append([
+                    resharding_cost_vector(cluster_env, lhs,
+                        ShardingSpec.tile(lhs.shape, [lhs_con_dim], [1], cluster_env)),
+                    resharding_cost_vector(cluster_env, rhs,
+                        ShardingSpec.tile(rhs.shape, [rhs_con_dim, rhs_space_dim], [1, 0], cluster_env))
+                ])
 
         # Split one batch dim
         for i in range(len(self.lhs_batch_dims)):

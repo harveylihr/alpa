@@ -272,7 +272,7 @@ class MLPSolverTest(unittest.TestCase):
     def test_mlp_2_layer_data_parallel(self):
         # Build Hlo Computation
         batch_size = 1024
-        hidden_dim = 1024
+        hidden_dim = 128
 
         computation = get_mlp_2_layer_computation(batch_size, hidden_dim,
             hidden_dim, hidden_dim)
@@ -499,9 +499,9 @@ def suite():
 
     # HLI: test inference
     # suite.addTest(MLPSolverTest('test_inf_mlp_2_layer_data_parallel'))
-    suite.addTest(MLPSolverTest('test_mlp_2_layer_bs1024_hidden1024_dmesh16x16_mem1MB'))
+    # suite.addTest(MLPSolverTest('test_mlp_2_layer_bs1024_hidden1024_dmesh16x16_mem1MB'))
 
-    # suite.addTest(MLPSolverTest('test_mlp_2_layer_data_parallel'))
+    suite.addTest(MLPSolverTest('test_mlp_2_layer_data_parallel'))
     # suite.addTest(MLPSolverTest('test_mlp_2_layer_model_parallel'))
     # suite.addTest(MLPSolverTest('test_mlp_n_layer_data_parallel'))
     # suite.addTest(MLPSolverTest('test_mlp_n_layer_model_parallel'))

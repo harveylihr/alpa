@@ -390,6 +390,7 @@ def test_reshard_all_to_all():
     print(compiled_computation.hlo_modules()[0].to_string())
 
 
+
 def test_reshard_change_mesh_shape():
     c = xla_client.XlaBuilder("shard")
 
@@ -413,6 +414,12 @@ def test_reshard_change_mesh_shape():
     sharding2 = xla_client.OpSharding()
     sharding2.type = sharding.type.TUPLE
     sharding2.tuple_shardings = [sharding]
+
+    # sharding3 = xla_client.OpSharding()
+    # sharding3.type = sharding.type.MAXIMAL
+    # sharding3.tile_assignment_dimensions = [1, 1]
+    # sharding3.tile_assignment_devices = [0, 1, 2, 3]
+
     c.set_sharding(sharding2)
     out = ops.Tuple(c, [z])
     c.clear_sharding()
@@ -420,6 +427,8 @@ def test_reshard_change_mesh_shape():
     # Build HLO
     c = c.build(out)
     print(c.as_hlo_text())
+    print("=" * 20)
+    print(c.as_hlo_dot_graph())
     print("=" * 20)
 
     # Compile
@@ -443,7 +452,7 @@ def test_reshard_change_mesh_shape():
 
     # Print spmd partitioned HLO
     print(compiled_computation.hlo_modules()[0].to_string())
-
+    # print(xla_client._xla.hlo_module_to_dot_graph(compiled_computation.hlo_modules()[0].to_string()))
 
 def test_skip_hlo_passes():
     from alpa import XlaPassContext

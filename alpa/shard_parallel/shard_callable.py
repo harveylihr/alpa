@@ -192,18 +192,33 @@ def shard_parallel_internal(
         f.write(built.as_hlo_text())
     with open("logs/emo_hlo_graph_before_autosharding.dot","w") as f:
         f.write(built.as_hlo_dot_graph())    
+    sharding_options = global_config.default_autosharding_option.deepcopy_and_update(
+        {"allow_temporal_tiling": global_config.allow_temporal_tiling,
+        "temporal_tile_size_per_dim": global_config.temporal_tile_size_per_dim,
+        "num_temporal_buffer_per_device": global_config.num_temporal_buffer_per_device}
+        )
+    
     # Compile a XLA executabl    
     if strategy_config is None:
-        hlo_module, strategy_config = run_auto_sharding_pass(
-            built,
-            avals,
-            out_avals,
-            donated_invars,
-            logical_mesh_choices[0],
-            "single",
-            1,
-            global_config.default_autosharding_option,
-            memory_budget_per_device=memory_budget_per_device)
+        for s in logical_mesh_choices:
+            hlo_module_cur, strategy_config_cur = run_auto_sharding_pass(
+                built,
+                avals,
+                out_avals,
+                donated_invars,
+                s,
+                "single",
+                1,
+                sharding_options,
+                memory_budget_per_device=memory_budget_per_device)
+            if strategy_config is not None:
+                if strategy_config_cur.auto_sharding_objective <= strategy_config.auto_sharding_objective:
+                    hlo_module = hlo_module_cur
+                    strategy_config = strategy_config_cur
+            else:
+                hlo_module = hlo_module_cur
+                strategy_config = strategy_config_cur
+            
     else:
         assert NotImplementedError
 

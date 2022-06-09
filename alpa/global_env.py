@@ -28,6 +28,11 @@ class AutoShardingOption:
         # instead of the ILP solver.
         self.all_reduce_threshold = 1 << 60  # The threshold of all-reduce combiner in bytes.
 
+        # THRIVE
+        self.allow_temporal_tiling = False
+        self.temporal_tile_size_per_dim = 64
+        self.num_temporal_buffer_per_device = 1
+
     def deepcopy_and_update(self, new_values: dict):
         """Make a deepcopy and update some keys with new values."""
         ret = copy.copy(self)
@@ -120,6 +125,12 @@ class GlobalConfig:
         self.default_ray_namespace_prefix = "alpa-train"
         self.unittest_ray_namespace_prefix = "alpa-unittest"
 
+        ########## THRIVE ###########
+        self.allow_temporal_tiling = False,
+        self.temporal_tile_size_per_dim = 64,
+        self.num_temporal_buffer_per_device  = 1,
+        self.force_lazy_data_transfer = False,
+        self.stop_before_backend_compilation = False
     def backup(self):
         """Backup the configs."""
         return copy.deepcopy(self.__dict__)
@@ -158,7 +169,14 @@ def set_parallelize_options(
         auto_stage_construction_imbalance_tolerance: float = np.inf,
         pipeline_parallel_schedule: str = "1f1b",
         use_hlo_cost_model: bool = False,
-        profiling_database_filename: Optional[str] = None):
+        profiling_database_filename: Optional[str] = None,
+        # THRIVE
+        allow_temporal_tiling: bool = False,
+        temporal_tile_size_per_dim: int = 64,
+        num_temporal_buffer_per_device: int = 1,
+        force_lazy_data_transfer: bool = False,
+        stop_before_backend_compilation: bool = False,
+        ):
     """
     Set the global options for all @parallelize decorator.
 
@@ -223,7 +241,12 @@ def set_parallelize_options(
     global_config.use_hlo_cost_model = use_hlo_cost_model
     global_config.profiling_database_filename = profiling_database_filename
 
-
+    ###### THRIVE #######
+    global_config.allow_temporal_tiling = allow_temporal_tiling,
+    global_config.temporal_tile_size_per_dim = temporal_tile_size_per_dim,
+    global_config.num_temporal_buffer_per_device  = num_temporal_buffer_per_device,
+    global_config.force_lazy_data_transfer = force_lazy_data_transfer,
+    global_config.stop_before_backend_compilation = stop_before_backend_compilation
 is_worker = os.environ.get("ALPA_IS_WORKER", "False") == "True"
 
 os.environ["XLA_FLAGS"] = os.environ.get(

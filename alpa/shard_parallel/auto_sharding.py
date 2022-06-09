@@ -296,6 +296,9 @@ def run_auto_sharding_pass(
             "auto_sharding::force_strategy_stra_names": [],
 
             #HLI: Define THRIVE-DSE options here
+            "auto_sharding::allow_temporal_tiling": as_option.allow_temporal_tiling,
+            "auto_sharding::temporal_tile_size_per_dim": as_option.temporal_tile_size_per_dim,
+            "auto_sharding::num_temporal_buffer_per_device": as_option.num_temporal_buffer_per_device
     }):
         compiled_module = xe.run_auto_sharding(xla_computation, compile_options)
 
@@ -581,7 +584,7 @@ def _call_solver_serialized_args(
         m_np,
         r_np,
         v_np,
-        s_init_np=None, allow_temporal_tile=False):
+        s_init_np=None):
     """Call the solver with serialized arguments."""
     global last_s_val, last_objective
 
@@ -634,7 +637,7 @@ def _call_solver_serialized_args(
     v = []
     pt = 0
     for (i, j) in A:
-        prod_length = s_len[i] * s_len[j]
+        prod_length = s_len[i] * s_len[j] # num of strategies given alias before and after
         v.append(v_np[pt:pt + prod_length])
         pt += prod_length
     assert pt == len(v_np)

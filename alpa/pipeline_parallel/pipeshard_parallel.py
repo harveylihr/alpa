@@ -56,8 +56,12 @@ def pipeshard_parallel_callable(fun: lu.WrappedFun, in_tree, out_tree_thunk,
     gensym_func = gensym([closed_jaxpr.jaxpr])
     closed_jaxpr, compute_grad_jaxpr, apply_grad_jaxpr, barrier = (
         split_compute_grad_and_apply_grad(closed_jaxpr, gensym_func))
-    have_apply_grad = barrier is not None
-
+    have_apply_grad = barrier is not None  
+    print("compute_grad_jaxpr:")
+    print(compute_grad_jaxpr)
+    print("apply_grad_jaxpr:")
+    print(apply_grad_jaxpr)    
+    
     if have_apply_grad:
         acc_grad_jaxpr, acc_grad_dict, grad_in_to_out = compute_grad_to_accumulate_grad(
             compute_grad_jaxpr, gensym_func)

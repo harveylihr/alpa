@@ -209,16 +209,17 @@ class CostGraph:
 
 
 class SolverOption:
-    def __init__(self,allow_temporal_tile=False, temporal_tile_size_options=[],num_temporal_buffer_per_device=2):
+    def __init__(self,temporal_tile_size_options=[],num_temporal_buffer_per_device=2, force_lazy_liveness=False):
         self.force_batch_dim_to_mesh_dim = None
 
         self.forward_backward_sep_id = None
         self.force_all_reduce_cost = None
         self.force_all_gather_cost = None
         self.force_reduce_scatter_cost = None
-        self.allow_temporal_tile = allow_temporal_tile # HLI: Allow temporal tiling
-        self.temporal_tile_size_options = temporal_tile_size_options # HLI: tiling options for each dimension
-        self.num_temporal_buffer_per_device = num_temporal_buffer_per_device # HLI: how many  
+        # self.allow_temporal_tile = allow_temporal_tile # HLI: Allow temporal tiling
+        self.temporal_tile_size_options = temporal_tile_size_options # HLI: tiling options for each dimension (currently only support reduction dim)
+        self.num_temporal_buffer_per_device = num_temporal_buffer_per_device # HLI: how many buffers will be allocated for temporal tiles.
+        self.force_latest_data_transfer = force_lazy_liveness # data is allowed to be on PE memory right before it is used. (Assume data is originally in DRAM)
 
 
 def solve_auto_sharding(computation, cluster_env, solver_option=None):
@@ -340,7 +341,7 @@ def solve_auto_sharding(computation, cluster_env, solver_option=None):
                     stra_idx = reindexing_vector[i][idx]
                     follow_map += f"[{instructions[dst].strategies[idx].name} -> "\
                             f"{instructions[i].strategies[stra_idx].name}] "
-            #print(f"Time {i:2d}: {computation.instructions[i]}  Strategy: {name} Spec: {spec}")
+            # print(f"Time {i:2d}: {computation.instructions[i]}  Strategy: {name} Spec: {spec}")
             print(f"Time {i:2d}: {computation.instructions[i]}  Strategy: {name}")
             #if follow_map:
             #    print(follow_map)
@@ -357,5 +358,10 @@ def solve_auto_sharding(computation, cluster_env, solver_option=None):
             for i in L[t]:
                 mem += m[i][s_val[i]]
             print(f"Time {t}, memory: {mem / 1024**2: .2f} MB")
-
+        # Shard vector
+        # print("===== Shard vector =====")
+        # for t in range(N):
+        #     mem = 0
+        #     for i in L[t]:
+        #         print(f"Time {t}, Instr {instructions[i].strategies[s_val[i]].name} Tensor {i} : Shard vector {s_val[i]}")
     return objective

@@ -203,17 +203,17 @@ class NormalMeshDriverExecutable(MeshDriverExecutable):
             for x in self.input_indices:
                 f.write("".join(str(x)))
                 f.write("\n")    
-      
-        # Send the executable to workers
-        self.exec_uuid = next_mesh_executable_uuid()
-        self.set_executable(physical_mesh, hlo_module, strategy_config)
+        if global_config.stop_before_backend_compilation == False:      
+            # Send the executable to workers
+            self.exec_uuid = next_mesh_executable_uuid()
+            self.set_executable(physical_mesh, hlo_module, strategy_config)
 
-        # Set up timers
-        self.timer_name = get_execution_timer_name(self.exec_uuid)
-        if global_config.shard_parallel_sync_for_timer:
-            self.sync_func = get_sync_func_driver(physical_mesh)
-        else:
-            self.sync_func = None
+            # Set up timers
+            self.timer_name = get_execution_timer_name(self.exec_uuid)
+            if global_config.shard_parallel_sync_for_timer:
+                self.sync_func = get_sync_func_driver(physical_mesh)
+            else:
+                self.sync_func = None
 
     def set_executable(self, physical_mesh, hlo_module, strategy_config):
         """Put the executable on workers."""
@@ -233,9 +233,10 @@ class NormalMeshDriverExecutable(MeshDriverExecutable):
                 return
 
             backend = xb.get_backend("gpu")
+
             self.compiled = run_backend_compilation(backend, hlo_module,
-                                                    strategy_config,
-                                                    physical_mesh.num_devices)
+                                                        strategy_config,
+                                                        physical_mesh.num_devices)
             self.hlo_text = self.compiled.hlo_modules()[0].to_string()
             with open("logs/compiled_hlo_after_autosharding.txt","w") as f:
                 f.write(self.get_hlo_text())

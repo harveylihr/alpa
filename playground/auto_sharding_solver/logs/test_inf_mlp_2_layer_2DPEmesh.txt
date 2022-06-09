@@ -1,0 +1,179 @@
+Welcome to the CBC MILP Solver 
+Version: 2.10.3 
+Build Date: Mar 24 2020 
+
+command line - cbc /tmp/85bae949438e481fba0105197eea08fa-pulp.mps sec 600 threads 256 timeMode elapsed branch printingOptions all solution /tmp/85bae949438e481fba0105197eea08fa-pulp.sol (default strategy 1)
+At line 2 NAME          MODEL
+At line 3 ROWS
+At line 107 COLUMNS
+At line 1615 RHS
+At line 1718 BOUNDS
+At line 1949 ENDATA
+Problem MODEL has 102 rows, 230 columns and 927 elements
+Coin0008I MODEL read with 0 errors
+seconds was changed from 1e+100 to 600
+threads was changed from 0 to 256
+Option for timeMode changed from cpu to elapsed
+Continuous objective value is 3.03804e+06 - 0.00 seconds
+Cgl0003I 132 fixed, 0 tightened bounds, 6 strengthened rows, 2 substitutions
+Cgl0003I 0 fixed, 0 tightened bounds, 0 strengthened rows, 2 substitutions
+Cgl0003I 0 fixed, 0 tightened bounds, 1 strengthened rows, 0 substitutions
+Cgl0003I 0 fixed, 0 tightened bounds, 1 strengthened rows, 0 substitutions
+Cgl0003I 0 fixed, 0 tightened bounds, 1 strengthened rows, 0 substitutions
+Cgl0003I 0 fixed, 0 tightened bounds, 1 strengthened rows, 0 substitutions
+Cgl0004I processed model has 42 rows, 50 columns (50 integer (50 of which binary)) and 160 elements
+Cbc0038I Initial state - 0 integers unsatisfied sum - 2.22045e-16
+Cbc0038I Solution found of 6.29146e+06
+Cbc0038I Before mini branch and bound, 50 integers at bound fixed and 0 continuous
+Cbc0038I Mini branch and bound did not improve solution (0.01 seconds)
+Cbc0038I After 0.01 seconds - Feasibility pump exiting with objective of 6.29146e+06 - took 0.00 seconds
+Cbc0012I Integer solution of 6291458 found by feasibility pump after 0 iterations and 0 nodes (0.01 seconds)
+Cbc0030I Thread 0 used 0 times,  waiting to start 0.0096418858, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 1 used 0 times,  waiting to start 0.0096149445, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 2 used 0 times,  waiting to start 0.009480238, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 3 used 0 times,  waiting to start 0.0093467236, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 4 used 0 times,  waiting to start 0.0092000961, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 5 used 0 times,  waiting to start 0.0090818405, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 6 used 0 times,  waiting to start 0.0089480877, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 7 used 0 times,  waiting to start 0.0088195801, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 8 used 0 times,  waiting to start 0.0086796284, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 9 used 0 times,  waiting to start 0.0085456371, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 10 used 0 times,  waiting to start 0.0084064007, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 11 used 0 times,  waiting to start 0.0082662106, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 12 used 0 times,  waiting to start 0.0081384182, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 13 used 0 times,  waiting to start 0.0079903603, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 14 used 0 times,  waiting to start 0.007860899, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 15 used 0 times,  waiting to start 0.0077209473, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 16 used 0 times,  waiting to start 0.0075871944, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 17 used 0 times,  waiting to start 0.0074467659, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 18 used 0 times,  waiting to start 0.0072991848, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 19 used 0 times,  waiting to start 0.0071539879, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 20 used 0 times,  waiting to start 0.0070104599, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 21 used 0 times,  waiting to start 0.0068657398, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 22 used 0 times,  waiting to start 0.0067141056, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 23 used 0 times,  waiting to start 0.0065920353, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 24 used 0 times,  waiting to start 0.0064365864, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 25 used 0 times,  waiting to start 0.00629282, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 26 used 0 times,  waiting to start 0.0061416626, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 27 used 0 times,  waiting to start 0.0058250427, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 28 used 0 times,  waiting to start 0.0058531761, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 29 used 0 times,  waiting to start 0.0057024956, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 30 used 0 times,  waiting to start 0.0055546761, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 31 used 0 times,  waiting to start 0.0053868294, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 32 used 0 times,  waiting to start 0.0050837994, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 33 used 0 times,  waiting to start 0.0051124096, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 34 used 0 times,  waiting to start 0.0046062469, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 35 used 0 times,  waiting to start 0.0046343803, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 36 used 0 times,  waiting to start 0.0046768188, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 37 used 0 times,  waiting to start 0.0044958591, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 38 used 0 times,  waiting to start 0.0044124126, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 39 used 0 times,  waiting to start 0.0042626858, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 40 used 0 times,  waiting to start 0.00410676, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 41 used 0 times,  waiting to start 0.0039641857, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 42 used 0 times,  waiting to start 0.0038068295, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 43 used 0 times,  waiting to start 0.0036528111, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 44 used 0 times,  waiting to start 0.0035085678, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 45 used 0 times,  waiting to start 0.0031740665, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 46 used 0 times,  waiting to start 0.0031971931, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 47 used 0 times,  waiting to start 0.0026957989, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 48 used 0 times,  waiting to start 0.0027089119, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 49 used 0 times,  waiting to start 0.0027348995, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 50 used 0 times,  waiting to start 0.0020682812, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 51 used 0 times,  waiting to start 0.0020816326, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 52 used 0 times,  waiting to start 0.0020949841, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 53 used 0 times,  waiting to start 0.0021264553, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 54 used 0 times,  waiting to start 0.0017578602, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Thread 55 used 0 times,  waiting to start 0.0017683506, 0 cpu time, 0 locks, 0 locked, 0 waiting for locks
+Cbc0030I Main thread 0 waiting for threads,  1 locks, 1.9073486e-06 locked, 2.3841858e-07 waiting for locks
+Cbc0001I Search completed - best objective 6291458, took 0 iterations and 0 nodes (0.02 seconds)
+Cbc0035I Maximum depth 0, 0 variables fixed on reduced cost
+Cuts at root node changed objective from 6.29146e+06 to 6.29146e+06
+Probing was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Gomory was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Knapsack was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+Clique was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+MixedIntegerRounding2 was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+FlowCover was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+TwoMirCuts was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+ZeroHalf was tried 0 times and created 0 cuts of which 0 were active after adding rounds of cuts (0.000 seconds)
+
+Result - Optimal solution found
+
+Objective value:                6291458.00000000
+Enumerated nodes:               0
+Total iterations:               0
+Time (CPU seconds):             0.01
+Time (Wallclock seconds):       0.02
+
+Option for printingOptions changed from normal to all
+Total time (CPU seconds):       0.01   (Wallclock seconds):       0.02
+
+####### Mesh shape:  (4, 4)  #######
+===== Hlo Computation =====
+ 0: parameter.0 (1024, 1024) = parameter()
+ 1: parameter.1 (1024, 1024) = parameter()
+ 2: parameter.2 (1024, 1024) = parameter()
+ 3: parameter.3 (1024, 1024) = parameter()
+ 4: parameter.4 (1024,) = parameter()
+ 5: parameter.5 (1024,) = parameter()
+ 6: dot.0 (1024, 1024) = dot(parameter.0, parameter.2)  lhs_con_dim=(1,), rhs_con_dim=(0,)
+ 7: broadcast.0 (1024, 1024) = broadcast(parameter.4)
+ 8: add.0 (1024, 1024) = add(dot.0, broadcast.0)
+ 9: dot.1 (1024, 1024) = dot(add.0, parameter.3)  lhs_con_dim=(1,), rhs_con_dim=(0,)
+10: broadcast.1 (1024, 1024) = broadcast(parameter.5)
+11: add.1 (1024, 1024) = add(dot.1, broadcast.1)
+12: subtract.0 (1024, 1024) = subtract(add.1, parameter.1) 
+
+===== Liveness Analysis =====
+Time: 0, Live set: ['parameter.0']
+Time: 1, Live set: ['parameter.0', 'parameter.1']
+Time: 2, Live set: ['parameter.0', 'parameter.1', 'parameter.2']
+Time: 3, Live set: ['parameter.0', 'parameter.1', 'parameter.2', 'parameter.3']
+Time: 4, Live set: ['parameter.0', 'parameter.1', 'parameter.2', 'parameter.3', 'parameter.4']
+Time: 5, Live set: ['parameter.0', 'parameter.1', 'parameter.2', 'parameter.3', 'parameter.4', 'parameter.5']
+Time: 6, Live set: ['dot.0', 'parameter.0', 'parameter.1', 'parameter.2', 'parameter.3', 'parameter.4', 'parameter.5']
+Time: 7, Live set: ['broadcast.0', 'dot.0', 'parameter.1', 'parameter.3', 'parameter.4', 'parameter.5']
+Time: 8, Live set: ['add.0', 'broadcast.0', 'dot.0', 'parameter.1', 'parameter.3', 'parameter.5']
+Time: 9, Live set: ['add.0', 'dot.1', 'parameter.1', 'parameter.3', 'parameter.5']
+Time: 10, Live set: ['broadcast.1', 'dot.1', 'parameter.1', 'parameter.5']
+Time: 11, Live set: ['add.1', 'broadcast.1', 'dot.1', 'parameter.1']
+Time: 12, Live set: ['add.1', 'parameter.1', 'subtract.0']
+merge 7 to 4
+merge 8 to 6
+merge 10 to 5
+merge 11 to 9
+merge 12 to 9
+ILP Status: Optimal	Objective: 6291458.0	Time: 0.14416718482971191
+#nodes: 8,  #edges: 7
+Edge cost (3, 9) : 3145729.0
+Edge cost (6, 9) : 3145729.0
+===== Sharding Strategy =====
+Time  0: parameter.0 (1024, 1024) = parameter()  Strategy: S0 @ 0; temporal_tile_on_R(tsize=64, temp_buffer=2)
+Time  1: parameter.1 (1024, 1024) = parameter()  Strategy: S0 @ 0; temporal_tile_on_R(tsize=64, temp_buffer=2)
+Time  2: parameter.2 (1024, 1024) = parameter()  Strategy: S1 @ 1; temporal_tile_on_R(tsize=64, temp_buffer=2)
+Time  3: parameter.3 (1024, 1024) = parameter()  Strategy: S0 @ 0; temporal_tile_on_R(tsize=64, temp_buffer=2)
+Time  4: parameter.4 (1024,) = parameter()  Strategy: S0 @ 1; temporal_tile_on_R(tsize=64, temp_buffer=2)
+Time  5: parameter.5 (1024,) = parameter()  Strategy: S0 @ 1; temporal_tile_on_R(tsize=64, temp_buffer=2)
+Time  6: dot.0 (1024, 1024) = dot(parameter.0, parameter.2)  lhs_con_dim=(1,), rhs_con_dim=(0,)  Strategy: SS = SR x RS @ {0,1}
+Time  7: broadcast.0 (1024, 1024) = broadcast(parameter.4)  Strategy: (1, 4, 4) follow 4
+Time  8: add.0 (1024, 1024) = add(dot.0, broadcast.0)  Strategy: (4, 4) follow 6
+Time  9: dot.1 (1024, 1024) = dot(add.0, parameter.3)  lhs_con_dim=(1,), rhs_con_dim=(0,)  Strategy: SS = SR x RS @ {0,1}
+Time 10: broadcast.1 (1024, 1024) = broadcast(parameter.5)  Strategy: (1, 4, 4) follow 5
+Time 11: add.1 (1024, 1024) = add(dot.1, broadcast.1)  Strategy: (4, 4) follow 9
+Time 12: subtract.0 (1024, 1024) = subtract(add.1, parameter.1)  Strategy: (4, 4) follow 9
+Edge cost (3, 9) : 3145729.1
+Edge cost (6, 9) : 3145729.1
+===== Memory Usage =====
+Time 0, memory:  0.12 MB
+Time 1, memory:  0.25 MB
+Time 2, memory:  0.75 MB
+Time 3, memory:  0.88 MB
+Time 4, memory:  0.88 MB
+Time 5, memory:  0.88 MB
+Time 6, memory:  1.13 MB
+Time 7, memory:  1.50 MB
+Time 8, memory:  1.75 MB
+Time 9, memory:  0.75 MB
+Time 10, memory:  1.38 MB
+Time 11, memory:  1.62 MB
+Time 12, memory:  0.62 MB

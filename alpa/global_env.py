@@ -126,10 +126,10 @@ class GlobalConfig:
         self.unittest_ray_namespace_prefix = "alpa-unittest"
 
         ########## THRIVE ###########
-        self.allow_temporal_tiling = False,
-        self.temporal_tile_size_per_dim = 64,
-        self.num_temporal_buffer_per_device  = 1,
-        self.force_lazy_data_transfer = False,
+        self.allow_temporal_tiling = False
+        self.temporal_tile_size_per_dim = 64
+        self.num_temporal_buffer_per_device  = 1
+        self.force_lazy_data_transfer = False
         self.stop_before_backend_compilation = False
     def backup(self):
         """Backup the configs."""
@@ -242,10 +242,10 @@ def set_parallelize_options(
     global_config.profiling_database_filename = profiling_database_filename
 
     ###### THRIVE #######
-    global_config.allow_temporal_tiling = allow_temporal_tiling,
-    global_config.temporal_tile_size_per_dim = temporal_tile_size_per_dim,
-    global_config.num_temporal_buffer_per_device  = num_temporal_buffer_per_device,
-    global_config.force_lazy_data_transfer = force_lazy_data_transfer,
+    global_config.allow_temporal_tiling = allow_temporal_tiling
+    global_config.temporal_tile_size_per_dim = temporal_tile_size_per_dim
+    global_config.num_temporal_buffer_per_device  = num_temporal_buffer_per_device
+    global_config.force_lazy_data_transfer = force_lazy_data_transfer
     global_config.stop_before_backend_compilation = stop_before_backend_compilation
 is_worker = os.environ.get("ALPA_IS_WORKER", "False") == "True"
 

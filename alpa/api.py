@@ -2,6 +2,7 @@
 from functools import wraps
 from typing import Callable, Optional, Sequence, Union
 
+import os, sys
 import jax
 from jax import linear_util as lu
 from jax._src import api
@@ -52,7 +53,7 @@ def parallelize(fun=None,
         @wraps(fun)
         @api_boundary
         def ret_func(*args, **kwargs):
-            return_value_mode = kwargs.pop("__return_value_mode", "normal")
+            return_value_mode = kwargs.pop("__return_value_mode", "thrive_dse")
             assert not kwargs, "kwargs is not supported"
 
             f = lu.wrap_init(fun)
@@ -108,11 +109,21 @@ def parallelize(fun=None,
                 f, in_tree, out_tree_hashable, static_argnums, donated_invars,
                 batch_invars, devices, global_config.strategy,
                 global_config.memory_budget_per_device, *abstract_args)
+            
 
             if return_value_mode == "normal":
                 # Execute the compiled func and return results
-                out = compiled_func(*args_flat)
+                out = None
+                if global_config.debug_with_local_runtime:
+                    out = compiled_func.run(*args_flat)
+                else:
+                    out = compiled_func(*args_flat)
                 return tree_unflatten(out_tree(), out)
+            elif return_value_mode == "thrive_dse" and global_config.strategy == "pipeshard_parallel":
+                out = compiled_func.output(*args_flat)
+            elif return_value_mode == "thrive_dse" and global_config.strategy == "shard_parallel":
+                print("Not implemented, currently use existing skeleton of the executable ")
+                return compiled_func.get_executable()
             elif return_value_mode == "preshard_dynamic_args":
                 # In this mode, this function returns sharded arguments without executing
                 # the computation. This is used to prepare sharded arguments

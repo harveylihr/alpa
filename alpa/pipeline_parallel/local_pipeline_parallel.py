@@ -92,10 +92,12 @@ class LocalRuntime(BaseRuntime):
             self.hlo_texts_after_spmd_partitioner = []
             for stage in self.stages:
                 assert isinstance(stage, XlaShardedPipelineComputation)
-                compiled = stage.get_compiled(is_distributed=True)
-                hlo_module = compiled.hlo_modules()[0]
+                # compiled = stage.get_compiled() #is_distributed=True
+                # hlo_module = compiled.hlo_modules()[0]
                 self.hlo_texts_after_spmd_partitioner.append(
-                    hlo_module.to_string())
+                    stage.get_hlo_text())
+        # for stage in self.stages:
+        #     self.dot_graphs(stage.get_dot_graph())
 
     def run(self, *args, **kwargs):
         """Run function."""
@@ -109,12 +111,13 @@ class LocalRuntime(BaseRuntime):
         # Create variable dependency mapping.
         for stage in self.stages:
             for var in stage.invars:
-                if var not in global_invals:
-                    assert var in var_stage_mapping, f"referred to an unknown var {var}"
-                    var_reference_count[var] = var_reference_count.get(var,
-                                                                       0) + 1
+                if var not in global_invals: # HLI: if var is not global_invals, it must be from var_stage_mapping (from last stage) 
+                    # assert var in var_stage_mapping, f"referred to an unknown var {var}"
+                    if var not in var_stage_mapping:
+                        print("referred to an unknown var",var)
+                    var_reference_count[var] = var_reference_count.get(var,0) + 1 #HLI: increment the var's reference count
             for var in stage.outvars:
-                var_stage_mapping[var] = stage.name
+                var_stage_mapping[var] = stage.name # HLI: record the outvars of the previous stage
 
         for var in self.global_outvars:
             if not isinstance(var, Literal):

@@ -2,6 +2,7 @@
 import hashlib
 import inspect
 import time
+import os,sys
 from typing import Callable, Sequence, Optional
 
 import numpy as np
@@ -172,8 +173,8 @@ def shard_parallel_internal(
 
     # Trace to get jaxpr
     jaxpr, out_avals, consts = pe.trace_to_jaxpr_final(fun, avals)
-    print("jaxpr:")
-    print(jaxpr)
+    # print("jaxpr:")
+    # print(jaxpr)
     # Convert jaxpr to XLA HLO
     name = f"{fun.__name__}_shard_parallel"
     backend = xb.get_backend("gpu")
@@ -181,23 +182,27 @@ def shard_parallel_internal(
                                      donated_invars, backend)
     flop_count = xla_extension.hlo_module_count_flop_dot_conv_only(
         built.as_hlo_module())
-    print("### HLO BFFORE Auto Sharding ### ")       
-    print("as_hlo_dot_graph:")
-    print(built.as_hlo_dot_graph())
-    print("as_hlo_text:")
-    print(built.as_hlo_text())
-    print("as_hlo_module:")
-    print(built.as_hlo_module())
-    with open("logs/demo_hlo_text_before_autosharding.hlo","w") as f:
+    # print("### HLO BFFORE Auto Sharding ### ")       
+    # print("as_hlo_dot_graph:")
+    # print(built.as_hlo_dot_graph())
+    # print("as_hlo_text:")
+    # print(built.as_hlo_text())
+    # print("as_hlo_module:")
+    # print(built.as_hlo_module())
+    filepath="logs/shard/demo_hlo_text_before_autosharding.hlo"
+    os.makedirs(os.path.dirname(filepath), exist_ok=True) 
+    with open(filepath,"w") as f:
         f.write(built.as_hlo_text())
-    with open("logs/emo_hlo_graph_before_autosharding.dot","w") as f:
+    filepath="logs/shard/demo_hlo_graph_before_autosharding.hlo"
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)         
+    with open("logs/shard/demo_hlo_graph_before_autosharding.dot","w") as f:
         f.write(built.as_hlo_dot_graph())    
+
     sharding_options = global_config.default_autosharding_option.deepcopy_and_update(
         {"allow_temporal_tiling": global_config.allow_temporal_tiling,
         "temporal_tile_size_per_dim": global_config.temporal_tile_size_per_dim,
         "num_temporal_buffer_per_device": global_config.num_temporal_buffer_per_device}
         )
-    
     # Compile a XLA executabl    
     if strategy_config is None:
         for s in logical_mesh_choices:

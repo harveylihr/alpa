@@ -131,6 +131,7 @@ class GlobalConfig:
         self.num_temporal_buffer_per_device  = 1
         self.force_lazy_data_transfer = False
         self.stop_before_backend_compilation = False
+        self.generate_thrive_dse_output = False
     def backup(self):
         """Backup the configs."""
         return copy.deepcopy(self.__dict__)
@@ -170,12 +171,15 @@ def set_parallelize_options(
         pipeline_parallel_schedule: str = "1f1b",
         use_hlo_cost_model: bool = False,
         profiling_database_filename: Optional[str] = None,
+        debug_with_local_runtime: bool = False,
+        pipeline_distributed_compile: bool = False,
         # THRIVE
         allow_temporal_tiling: bool = False,
         temporal_tile_size_per_dim: int = 64,
         num_temporal_buffer_per_device: int = 1,
         force_lazy_data_transfer: bool = False,
         stop_before_backend_compilation: bool = False,
+        generate_thrive_dse_output: bool = False,
         ):
     """
     Set the global options for all @parallelize decorator.
@@ -240,13 +244,15 @@ def set_parallelize_options(
     global_config.pipeline_parallel_schedule = pipeline_parallel_schedule
     global_config.use_hlo_cost_model = use_hlo_cost_model
     global_config.profiling_database_filename = profiling_database_filename
-
+    global_config.debug_with_local_runtime = debug_with_local_runtime
+    global_config.pipeline_distributed_compile = pipeline_distributed_compile
     ###### THRIVE #######
     global_config.allow_temporal_tiling = allow_temporal_tiling
     global_config.temporal_tile_size_per_dim = temporal_tile_size_per_dim
     global_config.num_temporal_buffer_per_device  = num_temporal_buffer_per_device
     global_config.force_lazy_data_transfer = force_lazy_data_transfer
     global_config.stop_before_backend_compilation = stop_before_backend_compilation
+    global_config.generate_thrive_dse_output = generate_thrive_dse_output
 is_worker = os.environ.get("ALPA_IS_WORKER", "False") == "True"
 
 os.environ["XLA_FLAGS"] = os.environ.get(

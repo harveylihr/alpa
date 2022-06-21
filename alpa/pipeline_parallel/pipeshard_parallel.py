@@ -1,7 +1,8 @@
 """Generate callables that combines intra- and inter-op parallelisms."""
 import logging
 import threading
-
+import sys
+import os
 from jax import linear_util as lu
 from jax.core import gensym
 
@@ -27,10 +28,31 @@ from alpa.pipeline_parallel.apply_grad import (compute_grad_to_accumulate_grad,
 from alpa.pipeline_parallel.stage_construction import (
     cluster_layers_and_slice_mesh, cluster_layers_with_given_meshes)
 from alpa.pipeline_parallel.stage_profiling import CompileWorkerPool
-from alpa.util import trace_jaxpr_with_micro_batch, OrderedSet
+# from alpa.util import trace_jaxpr_with_micro_batch, OrderedSet
+from alpa.util import (jaxpr_to_hlo_computation, trace_jaxpr_with_micro_batch,
+                       setup_computation_alias, OrderedSet)
+from alpa.pipeline_parallel.thrive_dse import ThriveDseProducer
+from jax._src.lib import xla_bridge as xb
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+def examine_jaxpr(closed_jaxpr,fname):
+    jaxpr = closed_jaxpr.jaxpr
+    filepath = "logs/pipeshard/"+fname+".jax"
+    os.makedirs(os.path.dirname(filepath), exist_ok=True)    
+    with open(filepath,"w") as f:
+        original_stdout = sys.stdout
+        sys.stdout = f
+        print("invars:", jaxpr.invars)
+        print("outvars:", jaxpr.outvars)
+        print("constvars:", jaxpr.constvars)
+        for eqn in jaxpr.eqns:
+            print("equation:",eqn.invars,eqn.primitive, eqn.outvars, eqn.params)
+            # print()
+        print("jaxpr:", jaxpr)    
+        sys.stdout = original_stdout
 
 
 @lu.cache
@@ -43,7 +65,7 @@ def pipeshard_parallel_callable(fun: lu.WrappedFun, in_tree, out_tree_thunk,
         raise RuntimeError(
             f"Unrecognized type of `devices`, got: {type(devices)},"
             "expected type: `VirtualPhysicalMesh`.")
-
+    
     # Trace the function to get the jaxpr
     num_micro_batches = global_config.num_micro_batches
     if num_micro_batches is None:
@@ -51,17 +73,14 @@ def pipeshard_parallel_callable(fun: lu.WrappedFun, in_tree, out_tree_thunk,
         num_micro_batches = 1
     closed_jaxpr, _, batch_size = trace_jaxpr_with_micro_batch(
         fun, batch_invars, num_micro_batches, avals)
-
+    examine_jaxpr(closed_jaxpr,"closed_jaxpr")
     # Split the jaxpr into compute_grad and apply_grad
     gensym_func = gensym([closed_jaxpr.jaxpr])
     closed_jaxpr, compute_grad_jaxpr, apply_grad_jaxpr, barrier = (
         split_compute_grad_and_apply_grad(closed_jaxpr, gensym_func))
     have_apply_grad = barrier is not None  
-    print("compute_grad_jaxpr:")
-    print(compute_grad_jaxpr)
-    print("apply_grad_jaxpr:")
-    print(apply_grad_jaxpr)    
-    
+
+    examine_jaxpr(apply_grad_jaxpr,"apply_grad_jaxpr")
     if have_apply_grad:
         acc_grad_jaxpr, acc_grad_dict, grad_in_to_out = compute_grad_to_accumulate_grad(
             compute_grad_jaxpr, gensym_func)
@@ -70,6 +89,7 @@ def pipeshard_parallel_callable(fun: lu.WrappedFun, in_tree, out_tree_thunk,
         acc_grad_dict = {}
         grad_in_to_out = {}
 
+    examine_jaxpr(acc_grad_jaxpr,"acc_grad_jaxpr")
     # Slice the jaxpr into layers
     acc_grad_invars = acc_grad_jaxpr.jaxpr.invars
     acc_grad_outvars = acc_grad_jaxpr.jaxpr.outvars
@@ -104,6 +124,15 @@ def pipeshard_parallel_callable(fun: lu.WrappedFun, in_tree, out_tree_thunk,
                                                   global_invars, global_outvars)
     apply_grad_global_info = apply_grad_donation, global_outvars
 
+    name = f"{fun.__name__}_pipeshard_parallel_hlo_global"
+    built = jaxpr_to_hlo_computation(name, closed_jaxpr,
+                                     donated_invars, xb.get_backend("gpu"))
+    with open("logs/pipeshard/hlo_global.hlo","w") as f:
+        f.write(built.as_hlo_text())
+    # with open("logs/pipeshard/hlo_global.hlo","w") as f:
+    #     f.write(built.as_hlo_module())        
+    with open("logs/pipeshard/hlo_global.dot","w") as f:
+        f.write(built.as_hlo_dot_graph())                                         
     # Construct pipeline stages by merging layers
     if isinstance(devices, VirtualPhysicalMesh):
         virtual_mesh = devices
@@ -198,7 +227,11 @@ def pipeshard_parallel_callable(fun: lu.WrappedFun, in_tree, out_tree_thunk,
                             global_invars=global_invars,
                             global_outvars=global_outvars,
                             get_hlo_texts=True)
-
+    elif global_config.generate_thrive_dse_output:
+        return ThriveDseProducer(pipeline_stages=xla_stages,
+                            global_invars=global_invars,
+                            global_outvars=global_outvars,
+                            get_hlo_texts=True)
     # Launch all physical meshes in parallel
     if physical_meshes is None:
         physical_meshes = launch_physical_meshes(sliced_virtual_meshes)

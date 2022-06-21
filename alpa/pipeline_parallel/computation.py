@@ -345,7 +345,9 @@ class XlaShardedPipelineComputation(PipelineComputation):
         """Get the HLO text."""
         xla_computation = xc.XlaComputation(self.sharding_annotated_proto)
         return xla_computation.as_hlo_text()
-
+    def get_dot_graph(self):
+        xla_computation = xc.XlaComputation(self.sharding_annotated_proto)
+        return xla_computation.as_hlo_dot_graph()        
 
 def slice_closed_jaxpr_by_full_pipeline_marks(
         closed_jaxpr: ClosedJaxpr) -> Sequence[JaxPipelineComputation]:
@@ -888,6 +890,39 @@ def generate_sharded_xla_computations(
         strategy_config)
     return computations, flops
 
+def generate_sharded_xla_computations_global(
+        name: str, jax_computations: Sequence[JaxPipelineComputation],
+        computation_donate_invars, donatable_lists, acc_grad_outvars,
+        num_micro_batches, logical_mesh, autosharding_option,
+        memory_budget_per_device):
+    """
+    Generate sharded XLA computation for the global computational graph.
+
+    It runs the auto-sharding pass on the given JaxPipelineComputations.
+    Note: we merge the co-located forward and backward computation and compile
+    them together to get a sharding strategy config.
+    """
+
+    proto, jaxpr_args, flops = generate_sharded_xla_computations_arguments(
+        name, jax_computations, computation_donate_invars)
+    built = xc.XlaComputation(proto)
+    in_avals, out_avals, donated_invars = jaxpr_args
+
+    computation_names, computation_protos, strategy_config = run_auto_sharding_pass(
+        built,
+        in_avals,
+        out_avals,
+        donated_invars,
+        logical_mesh,
+        "stage_protos",
+        num_micro_batches,
+        autosharding_option,
+        memory_budget_per_device=memory_budget_per_device)
+    computations = generate_computations_from_protos(
+        jax_computations, computation_names, computation_protos,
+        computation_donate_invars, donatable_lists, acc_grad_outvars,
+        strategy_config)
+    return computations, flops
 
 def rewrite_hook(eqns, gensym_fn):
     """TODO(zhuohan)."""

@@ -157,6 +157,7 @@ def set_parallelize_options(
         num_micro_batches: Optional[int] = None,
         # shard-parallel
         search_logical_mesh_shape: bool = False,
+        logical_mesh_shape_choices: Sequence[Sequence[Tuple[int, int]]] = None,
         mesh_shape_search_mode: str = "cost_model",
         mesh_shape_search_log_file: Optional[str] = None,
         # pipeline-parallel
@@ -229,6 +230,7 @@ def set_parallelize_options(
 
     # shard-parallel
     global_config.shard_parallel_search_logical_mesh_shape = search_logical_mesh_shape
+    global_config.shard_parallel_logical_mesh_shape_choices = logical_mesh_shape_choices
     global_config.shard_parallel_mesh_shape_search_mode = mesh_shape_search_mode
     global_config.shard_parallel_mesh_shape_search_log_file = mesh_shape_search_log_file
 

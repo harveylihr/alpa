@@ -258,7 +258,7 @@ def run_auto_sharding_pass(
             "auto_sharding::prefer_reduce_scatter": prefer_reduce_scatter,
             "auto_sharding::reduce_scatter_grad_acc_friendly": reduce_scatter_grad_acc_friendly,
             "auto_sharding::reduce_scatter_aggressive_partition": reduce_scatter_aggressive_partition,
-            "auto_sharding::batch_matmul_always_split_batch": True,
+            "auto_sharding::batch_matmul_always_split_batch": True, #HLI why enable it?
             "auto_sharding::allow_recompute_heavy_op":
                 as_option.allow_recompute_heavy_op,
             "auto_sharding::allow_mixed_mesh_shape":
@@ -290,10 +290,10 @@ def run_auto_sharding_pass(
 
             # Debug options
             "auto_sharding::simplify_graph": True,
-            "auto_sharding::print_strategy": False,
+            "auto_sharding::print_strategy": True,
             "auto_sharding::force_strategy": False,
-            "auto_sharding::force_strategy_inst_indices": [],
-            "auto_sharding::force_strategy_stra_names": [],
+            "auto_sharding::force_strategy_inst_indices": [4],
+            "auto_sharding::force_strategy_stra_names": ["SR = SS x SR @ {0,1} (allreduce @ 1)"],
 
             #HLI: Define THRIVE-DSE options here
             "auto_sharding::allow_temporal_tiling": as_option.allow_temporal_tiling,

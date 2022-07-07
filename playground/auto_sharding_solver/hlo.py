@@ -353,7 +353,7 @@ class HloParameter(HloInstruction):
                         # for k in range(len(self.tile_shape)):
                             # self.tile_shape[k] = tsize
                         # self.tile_shape[i] = self.shape[i] / cluster_env.device_mesh.shape[j] # Only the S dimension still use the splitted tile size
-                        name = f"S{i} @ {j}; temporal_tile_on_R(tsize={tsize}, temp_buffer={solver_option.num_temporal_buffer_per_device})"
+                        name = f"S{i} @ {j}, t_sharding=(tsize={tsize}, temp_buffer={solver_option.num_temporal_buffer_per_device})"
                         # print("HloParameter, shape = ",self.shape,"temporally tiled.")
                         # print("tile_shape = ",self.tile_shape)
                         output_spec = ShardingSpec.tile(self.shape, [i], [j], cluster_env, tsize)
@@ -1002,22 +1002,39 @@ class HloComputation:
 
         return ct
 
-    def liveness_analysis(self):
+    def liveness_analysis(self, enable_lazy_livenss_analysis=False):
         liveness_dict = dict()
 
         live_set = set()
+        if enable_lazy_livenss_analysis:
+            print(self.instructions)
+            print("ENABLE LAZY LIVENESS ANALYSIS!")
+            for t in range(len(self.instructions)-1, -1, -1):
 
-        for t in range(len(self.instructions)-1, -1, -1):
-            inst = self.instructions[t]
+                inst = self.instructions[t]
+                print("t = ",t, "inst: ", inst.name)
+                if inst.op_code != OpCode.PARAMETER:
+                    live_set.add(inst)
+                    for operand in inst.operands:
+                        live_set.add(operand)
+                        print("add operand ",operand.name)
 
-            live_set.add(inst)
-            for operand in inst.operands:
-                live_set.add(operand)
+                liveness_dict[t] = set(live_set)
+                if inst.op_code != OpCode.PARAMETER:
+                    for operand in inst.operands:
+                        live_set.remove(operand)
+                        print("remove operand ",operand.name)            
+                    live_set.remove(inst)
+                print(live_set)
+        else:
 
-            liveness_dict[t] = set(live_set)
-
-            live_set.remove(inst)
-
+            for t in range(len(self.instructions)-1, -1, -1):
+                inst = self.instructions[t]
+                live_set.add(inst)
+                for operand in inst.operands:
+                    live_set.add(operand)
+                liveness_dict[t] = set(live_set)
+                live_set.remove(inst)        
         return liveness_dict
 
     def set_alias(self, alias_list):

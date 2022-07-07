@@ -112,6 +112,19 @@ def shard_parallel_callable(
             else:
                 logical_mesh_choices = []
                 strategy_config = inp.config
+        elif global_config.shard_parallel_search_logical_mesh_shape == False and global_config.shard_parallel_logical_mesh_shape_choices != None:
+            logical_mesh_choices = []
+            for shape in global_config.shard_parallel_logical_mesh_shape_choices:
+                logical_mesh_choices.append(
+                    physical_mesh.get_logical_mesh(
+                                    mesh_shape=shape,
+                                    # TODO(lmzheng): export this as an argument in
+                                    # set_parallelize_options or physical_mesh.
+                                    #mesh_alpha=[1,1],
+                                    #mesh_beta=[1,1]))
+                                    mesh_topology="tree",
+                                    inter_host_bandwidth=1,
+                                    intra_host_bandwidth=30))
         else:
             logical_mesh_choices = [physical_mesh.get_default_logical_mesh()]
     elif isinstance(devices, LogicalDeviceMesh):
@@ -173,8 +186,8 @@ def shard_parallel_internal(
 
     # Trace to get jaxpr
     jaxpr, out_avals, consts = pe.trace_to_jaxpr_final(fun, avals)
-    # print("jaxpr:")
-    # print(jaxpr)
+    print("closedjaxpr:")
+    print(ClosedJaxpr(jaxpr, consts))
     # Convert jaxpr to XLA HLO
     name = f"{fun.__name__}_shard_parallel"
     backend = xb.get_backend("gpu")
@@ -231,12 +244,12 @@ def shard_parallel_internal(
         print(f" - XLA Compilation time: {time.time() - tic:.2f} s")
     print("## strategy_config after autosharding:")
     print(strategy_config.to_jsonable())
-    with open("logs/demo_hlo_txt_after_autosharding.hlo","w") as f:
+    with open("logs/shard/demo_hlo_txt_after_autosharding.hlo","w") as f:
         f.write(hlo_module.to_string())
-    with open("logs/demo_hlo_graph_after_autosharding.dot","w") as f:
+    with open("logs/shard/demo_hlo_graph_after_autosharding.dot","w") as f:
         f.write(xc._xla.hlo_module_to_dot_graph(
         hlo_module))      
-    with open("logs/demo_shardconfig_after_autosharding.txt","w") as f:
+    with open("logs/shard/demo_shardconfig_after_autosharding.txt","w") as f:
         f.write("".join(str(strategy_config.to_jsonable())))  
     # Compile a mesh executable
     executable = NormalMeshDriverExecutable(physical_mesh,

@@ -120,7 +120,7 @@ def parallelize(fun=None,
                     out = compiled_func(*args_flat)
                 return tree_unflatten(out_tree(), out)
             elif return_value_mode == "thrive_dse" and global_config.strategy == "pipeshard_parallel":
-                out = compiled_func.output(*args_flat)
+                out = compiled_func.run(*args_flat)
             elif return_value_mode == "thrive_dse" and global_config.strategy == "shard_parallel":
                 print("Not implemented, currently use existing skeleton of the executable ")
                 return compiled_func.get_executable()

@@ -70,7 +70,7 @@ class ThriveDseProducer(BaseRuntime):
                  global_invars: Sequence[Var],
                  global_outvars: Sequence[Var],
                  physical_meshes: Sequence[PhysicalDeviceMesh] = None,
-                 get_hlo_texts=False):
+                 get_hlo_texts=True):
         """
         Return a runtime that runs all pipeline stages on a single local device.
 
@@ -100,7 +100,7 @@ class ThriveDseProducer(BaseRuntime):
         
         # for stage in self.stages:
         #     self.dot_graphs(stage.get_dot_graph())
-    def output(self,*args, **kwargs):
+    def run(self,*args, **kwargs):
         filename =  "logs/pipeshard/sliced_per_stage_hlo.hlo"
         os.makedirs(os.path.dirname(filename), exist_ok=True)
         with open(filename,"w") as f:

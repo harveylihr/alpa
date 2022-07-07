@@ -209,7 +209,7 @@ class CostGraph:
 
 
 class SolverOption:
-    def __init__(self,temporal_tile_size_options=[],num_temporal_buffer_per_device=2, force_lazy_liveness=False):
+    def __init__(self,temporal_tile_size_options=[],num_temporal_buffer_per_device=2, enable_lazy_liveness_analysis=True):
         self.force_batch_dim_to_mesh_dim = None
 
         self.forward_backward_sep_id = None
@@ -219,7 +219,7 @@ class SolverOption:
         # self.allow_temporal_tile = allow_temporal_tile # HLI: Allow temporal tiling
         self.temporal_tile_size_options = temporal_tile_size_options # HLI: tiling options for each dimension (currently only support reduction dim)
         self.num_temporal_buffer_per_device = num_temporal_buffer_per_device # HLI: how many buffers will be allocated for temporal tiles.
-        self.force_latest_data_transfer = force_lazy_liveness # data is allowed to be on PE memory right before it is used. (Assume data is originally in DRAM)
+        self.enable_lazy_liveness_analysis = enable_lazy_liveness_analysis # data is allowed to be on PE memory right before it is used. (Assume data is originally in DRAM)
 
 
 def solve_auto_sharding(computation, cluster_env, solver_option=None):
@@ -227,7 +227,7 @@ def solve_auto_sharding(computation, cluster_env, solver_option=None):
     print(computation, "\n")
 
     print("===== Liveness Analysis =====")
-    liveness_dict = computation.liveness_analysis()
+    liveness_dict = computation.liveness_analysis(solver_option.enable_lazy_liveness_analysis)
     for i in range(len(computation.instructions)):
         names = [ins.name for ins in liveness_dict[i]]
         names.sort()
